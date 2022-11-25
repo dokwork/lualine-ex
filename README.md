@@ -1,5 +1,7 @@
 # lualine-ex
 
+[![lualine-ex ci](https://github.com/dokwork/lualine-ex/actions/workflows/ci.yml/badge.svg)](https://github.com/dokwork/lualine-ex/actions/workflows/ci.yml)
+
 This is a [plugin](https://github.com/nvim-lualine/lualine.nvim/wiki/Plugins) 
 for the [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) 
 with additional [components](#components) and [utilities](#tools).
