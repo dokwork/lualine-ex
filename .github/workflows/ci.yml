@@ -1,4 +1,4 @@
-name: feline-cosmos ci
+name: lualine-ex ci
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        neovim_version: ['v0.7.0', 'v0.8.0', nightly']
+        neovim_version: ['v0.8.0', 'nightly']
 
     steps:
       - uses: actions/checkout@v3
@@ -49,6 +49,7 @@ jobs:
       - name: Install dependencies
         run:  |
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
+          git clone --depth 1 https://github.com/nvim-lualine/lualine.nvim ~/.local/share/nvim/site/pack/vendor/start/lualine.nvim
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
       - name: Run tests
         run: nvim --headless -u tests/init.vim -c "PlenaryBustedDirectory tests/ { minimal_init = './tests/init.vim' }"

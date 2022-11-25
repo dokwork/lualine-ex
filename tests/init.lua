@@ -24,8 +24,10 @@ vim.cmd([[packadd packer.nvim]])
 require('packer').startup(function(use)
     use('wbthomason/packer.nvim')
     use({
-        'lualine-ex',
+        'nvim-lualine/lualine.nvim',
         requires = {
+            { 'kyazdani42/nvim-web-devicons', opt = true },
+            { 'dokwork/lualine-ex', opt = true },
         },
     })
 end)
@@ -35,5 +37,4 @@ if packer_bootstrap then
     print('Please, restart nvim to use installed plugins.')
 else
     -- Configuration for tests:
-
 end

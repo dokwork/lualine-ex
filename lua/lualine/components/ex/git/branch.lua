@@ -4,7 +4,6 @@ local ex = require('lualine.ex')
 ---@field options GitBranchOptions
 local GitBranch = require('lualine.ex.component'):extend()
 
-
 ---@class GitBranchColors
 ---@field changed Color
 ---@field commited Color
@@ -17,12 +16,11 @@ GitBranch.default_options = {
         changed = { fg = 'orange' },
         commited = { fg = 'green' },
     },
-    is_enabled = g.is_git_workspace
+    is_enabled = g.is_git_workspace,
 }
 
 function GitBranch:setup(options)
     assert(vim.b.gitsigns_status_dict, 'You should have Gitsigns installed.')
-
 end
 
 function GitBranch:is_enabled()

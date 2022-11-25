@@ -1,7 +1,7 @@
 # lualine-ex
 
-This is an [plugin](https://github.com/nvim-lualine/lualine.nvim/wiki/Plugins) 
-for [lualine](https://github.com/nvim-lualine/lualine.nvim) 
+This is a [plugin](https://github.com/nvim-lualine/lualine.nvim/wiki/Plugins) 
+for the [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) 
 with additional [components](#components) and [utilities](#tools).
 
 ## Installation

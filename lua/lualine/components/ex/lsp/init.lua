@@ -40,7 +40,8 @@ end
 
 function LspComponent:setup()
     self.components = {}
-    local inactive_hl = h.get_lualine_hl('lualine_' .. self.options.self.section .. '_inactive') or {}
+    local inactive_hl = h.get_lualine_hl('lualine_' .. self.options.self.section .. '_inactive')
+        or {}
     if self.options.inactive_color then
         inactive_hl.fg = self.options.inactive_color
     end
@@ -72,7 +73,11 @@ function LspComponent:render(default_highlight, is_focused)
                     icons_enabled = self.options.icons_enabled,
                     color = self.options.color,
                     inactive_color_highlight = self.options.inactive_color_highlight,
-                    default_highlight_group = string.sub(default_highlight, 3, #default_highlight - 1),
+                    default_highlight_group = string.sub(
+                        default_highlight,
+                        3,
+                        #default_highlight - 1
+                    ),
                     icons_only = self.options.icons_only,
                     padding = self.options.inner_padding,
                 })
