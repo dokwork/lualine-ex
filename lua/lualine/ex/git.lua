@@ -2,6 +2,12 @@ local fs = vim.fs
 local fn = vim.fn
 local uv = vim.loop
 
+local function path(...)
+    local args = { ... }
+    return vim.fn.join(args, '/')
+end
+
+---Reads the whole file and returns its content.
 local function read(file_path)
     local f = io.open(file_path, 'r')
     if not f then
@@ -12,20 +18,24 @@ local function read(file_path)
     return content
 end
 
----Looking for the directory with {git_directory} outside the {working_directory}.
----@param working_directory string The path to the directory, from which search of
----   the {git_directory} should begun.
----@param git_directory string The name of the git directory. Usually it's ".git".
+---@class Git: Object
+---@field new fun(git_root_path: string): Git
+--- Creates a new {Git} provider instance around {git_root_path}.
+local Git = require('lualine.utils.class'):extend()
+
+---This static method looks for the path with `.git/` directory outside the {path}.
+---@param path string The path to the directory or file, from which the search of
+---   the `.git/` directory should begun.
 ---@return string # The path to the root of the git workspace, or nil.
-local function find_git_root(working_directory, git_directory)
+function Git.find_git_root(path)
     local function is_git_dir(path)
-        local dir = path .. '/' .. git_directory
+        local dir = path .. '/.git'
         return fn.isdirectory(dir) == 1
     end
 
-    local git_root = is_git_dir(working_directory) and working_directory or nil
+    local git_root = is_git_dir(path) and path or nil
     if not git_root then
-        for dir in fs.parents(working_directory) do
+        for dir in fs.parents(path) do
             if is_git_dir(dir) then
                 git_root = dir
                 break
@@ -35,48 +45,35 @@ local function find_git_root(working_directory, git_directory)
     return git_root
 end
 
-local function read_git_branch(git_HEAD_path)
-    local head = read(git_HEAD_path)
+---@type fun(git_root_path: string)
+---@param git_root_path string Path to the root of the git worktree.
+function Git:init(git_root_path)
+    local p, err = uv.fs_realpath(git_root_path)
+    if p then
+        local _, err = uv.fs_realpath(path(p, '.git'))
+        p = (not err and p) or nil
+    end
+    self.__git_root = p
+    self.__git_root_err = err
+end
+
+---Reads '{git_root}/.git/HEAD' file and gets the name of the current git branch, or the first 7
+---symbols of the commit sha.
+---@return string # The name of the current branch or first 7 symbols of the commit's hash.
+function Git:__read_git_branch()
+    local head = read(path(self:git_root(), '.git', 'HEAD'))
     local branch = string.match(head, 'ref: refs/heads/(%w+)')
         or string.match(head, 'ref: refs/tags/(%w+)')
         or string.match(head, 'ref: refs/remotes/(%w+)')
     return branch or head:sub(1, #head - 7)
 end
 
-local function read_git_staged(git_index_path)
-    local index = read(git_index_path)
-    return index and string.find(index, 'Staged') ~= nil
+---Returns a path to the root git directory, or nil with error message if path is not exists.
+function Git:git_root()
+    return self.__git_root, self.__git_root_err
 end
 
----@class GitProvider: Object
----@field new fun(working_directory: string, git_directory?: string): GitProvider
---- Creates a new provider around {working_directory} or {vim.fn.getcwd}.
---- Optionaly, the name of the git directory can be passed as {git_root}, or '.git' will be used.
----@field git_branch fun(): string The name of the current branch for the current buffer.
----@field is_git_workspace fun(): boolean `true` when the file of the current buffer is in a git workspace.
----@field is_workspace_changed fun(): boolean `true` if some file in the warkspace was added, or
----  removed, or changed.
-local GitProvider = require('lualine.utils.class'):extend()
-
----@type fun(working_directory?: string, git_directory?: string)
----@param working_directory string Path to the working directory.
----  If absent, result of the {vim.fn.getcwd} will be used.
----@param git_directory string the name of the git directory. `.git` by default.
-function GitProvider:init(working_directory, git_directory)
-    self.__git_directory = git_directory or '.git'
-    self.__working_directory = working_directory or vim.fn.getcwd()
-    self.__git_root = find_git_root(self.__working_directory, self.__git_directory)
-end
-
-function GitProvider:git_root(subpath)
-    if self.__git_root and subpath then
-        return string.format('%s/%s/%s', self.__git_root, self.__git_directory, subpath)
-    else
-        return self.__git_root
-    end
-end
-
-function GitProvider:get_branch()
+function Git:get_branch()
     -- git branch already known
     if self.__git_branch then
         return self.__git_branch
@@ -87,24 +84,19 @@ function GitProvider:get_branch()
         return nil
     end
 
-    local HEAD = self:git_root('HEAD')
     -- read current branch
-    self.__git_branch = read_git_branch(HEAD)
+    self.__git_branch = self:__read_git_branch()
 
     -- run poll of HEAD's changes
     self.__poll_head = uv.new_fs_event()
-    uv.fs_event_start(self.__poll_head, HEAD, {}, function()
-        self.__git_branch = read_git_branch(HEAD)
+    uv.fs_event_start(self.__poll_head, path(self:git_root(), '.git', 'HEAD'), {}, function()
+        self.__git_branch = self.__read_git_branch()
     end)
 
     return self.__git_branch
 end
 
-function GitProvider:is_workspace()
-    return self.__git_root ~= nil
-end
-
-function GitProvider:is_workspace_changed()
+function Git:is_workspace_changed()
     -- is_staged is already known
     if self.__staged then
         return true
@@ -115,20 +107,7 @@ function GitProvider:is_workspace_changed()
         return nil
     end
 
-    local index = self.git_root('index')
-
-    -- read is_staged
-    self.__staged = read_git_staged(index)
-
-    -- run poll of the index's changes
-    if self.__staged then
-        self.__poll_index = uv.new_fs_event()
-        uv.fs_event_start(self.__poll_index, index, {}, function()
-            self.__staged = read_git_staged(index)
-        end)
-    end
-
-    return self.__staged ~= nil
+    return
 end
 
-return GitProvider
+return Git

@@ -1,5 +1,3 @@
-local ex = require('lualine.ex')
-
 ---@class GitBranch: ExComponent
 ---@field options GitBranchOptions
 local GitBranch = require('lualine.ex.component'):extend()
@@ -20,7 +18,7 @@ GitBranch.default_options = {
 }
 
 function GitBranch:setup(options)
-    assert(vim.b.gitsigns_status_dict, 'You should have Gitsigns installed.')
+
 end
 
 function GitBranch:is_enabled()

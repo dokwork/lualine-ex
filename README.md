@@ -15,7 +15,7 @@ use {
     'nvim-lualine/lualine.nvim',
     requires = { 
       { 'kyazdani42/nvim-web-devicons', opt = true  },
-      { 'dokwork/lualine-ex', opt = true }
+      { 'dokwork/lualine-ex' }
     }
 }
 ```
