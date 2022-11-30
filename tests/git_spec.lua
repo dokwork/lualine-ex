@@ -1,63 +1,29 @@
+local fs = require('tests.ex.fs')
+local git = require('tests.ex.git')
+
 local eq = assert.are.equal
-local same = assert.are.same
 
-local Git = require('lualine.ex.git')
+local GitProvider = require('lualine.ex.git')
 
-local function debug(msg)
-    if vim.env.DEBUG then
-        print('> ' .. msg)
-    end
-end
-
-local function path(...)
-    local args = { ... }
-    return vim.fn.join(args, '/')
-end
-
-local function remove(path)
-    debug('Removing ' .. path)
-    os.execute('rm -rf ' .. path)
-end
-
-local function mkdir(path)
-    debug('Making a new directory: ' .. path)
-    os.execute('mkdir ' .. path)
-    local p, err = vim.loop.fs_realpath(path)
-    assert(not err, err)
-    return p
-end
-
-local function mktmpdir()
-    local cwd = '/tmp/__git_spec_cwd__'
-    remove(cwd)
-    cwd = mkdir(cwd)
-    debug('Working directory for tests is ' .. cwd)
-    return cwd
-end
-
-local function touch(path)
-    debug('Touch file ' .. path)
-    os.execute('touch ' .. path)
-end
 
 describe('outside a git worktree', function()
     local tmp_dir
 
     before_each(function()
-        tmp_dir = mktmpdir()
+        tmp_dir = fs.mktmpdir()
     end)
 
     after_each(function()
-        remove(tmp_dir)
+        fs.remove(tmp_dir)
     end)
 
     it('find_git_root should return nil for directory outside a git worktree', function()
-        eq(nil, Git.find_git_root(tmp_dir))
+        eq(nil, GitProvider.find_git_root(tmp_dir))
     end)
 
     it('git_root should return nil', function()
-        local git = Git:new(tmp_dir)
-        eq(nil, git:git_root())
+        local p = GitProvider:new(tmp_dir)
+        eq(nil, p:git_root())
     end)
 end)
 
@@ -65,43 +31,79 @@ describe('inside the git worktree', function()
     local git_root
 
     before_each(function()
-        git_root = mktmpdir()
-        os.execute('git init -b main ' .. git_root)
+        git_root = fs.mktmpdir()
+        git.init(git_root)
     end)
 
     after_each(function()
-        remove(git_root)
+        fs.remove(git_root)
     end)
 
     it('find_git_root should return git_root path when git_root passed', function()
-        eq(git_root, Git.find_git_root(git_root))
+        eq(git_root, GitProvider.find_git_root(git_root))
     end)
 
-    it('find_git_root should return git_root path when directory inside the git worktree passed', function()
-        eq(git_root, Git.find_git_root(mkdir(path(git_root, 'test'))))
-    end)
+    it(
+        'find_git_root should return git_root path when directory inside the git worktree passed',
+        function()
+            eq(git_root, GitProvider.find_git_root(fs.mkdir(fs.path(git_root, 'test'))))
+        end
+    )
 
     it('git_root should return path passed to the constructor', function()
-        local git = Git:new(git_root)
-        eq(git_root, git:git_root())
+        local p = GitProvider:new(git_root)
+        eq(git_root, p:git_root())
     end)
 
     it('get_branch should return the name of the current git branch', function()
-        local git = Git:new(git_root)
-        eq('main', git:get_branch())
+        local p = GitProvider:new(git_root)
+        eq('main', p:get_branch())
     end)
 
     it('is_workspace_changed should return false for a new git workspace', function()
-        local git = Git:new(git_root)
-        eq(false, git:is_workspace_changed())
+        local p = GitProvider:new(git_root)
+        eq(false, p:is_workspace_changed({ is_sync = true }))
     end)
 
     it('is_workspace_changed should return true when a file was added', function()
-        local file = path(git_root, 'test.txt')
-        touch(file)
-        os.execute('git -C ' .. git_root .. ' add ' .. file)
+        local file = fs.path(git_root, 'test.txt')
+        fs.touch(file)
+        git.add(git_root, file)
 
-        local git = Git:new(git_root)
-        eq(true, git:is_workspace_changed())
+        local p = GitProvider:new(git_root)
+        eq(true, p:is_workspace_changed({ is_sync = true }))
+    end)
+
+    it('is_workspace_changed should return true when a file was changed', function()
+        local file = fs.path(git_root, 'test.txt')
+        fs.touch(file)
+        git.add(git_root, file)
+        git.commit(git_root, 'add file')
+        fs.write(file, 'test')
+        git.add(git_root, '.')
+
+        local p = GitProvider:new(git_root)
+        eq(true, p:is_workspace_changed({ is_sync = true }))
+    end)
+
+    it('is_workspace_changed should return false right after commit all changes', function()
+        local file = fs.path(git_root, 'test.txt')
+        fs.touch(file)
+        git.add(git_root, file)
+        git.commit(git_root, 'add file')
+
+        local p = GitProvider:new(git_root)
+        eq(false, p:is_workspace_changed({ is_sync = true }))
+    end)
+
+    it('is_workspace_changed should return true when a file was removed', function()
+        local file = fs.path(git_root, 'test.txt')
+        fs.touch(file)
+        git.add(git_root, file)
+        git.commit(git_root, 'add file')
+        fs.remove(file)
+
+        local p = GitProvider:new(git_root)
+        eq(true, p:is_workspace_changed({ is_sync = true }))
     end)
 end)

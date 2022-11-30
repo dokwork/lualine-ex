@@ -2,6 +2,8 @@ local fs = vim.fs
 local fn = vim.fn
 local uv = vim.loop
 
+local Job = require('plenary.job')
+
 local function path(...)
     local args = { ... }
     return vim.fn.join(args, '/')
@@ -96,18 +98,39 @@ function Git:get_branch()
     return self.__git_branch
 end
 
-function Git:is_workspace_changed()
-    -- is_staged is already known
-    if self.__staged then
-        return true
+function Git:__git_status(is_sync, on_stdout)
+    if not self:git_root() then
+        return
     end
+    self.__git_status_job = Job:new({
+        command = 'git',
+        args = { 'status', '--porcelain' },
+        cwd = self:git_root(),
+        on_exit = function()
+            self.__git_status_job = nil
+        end,
+        on_stdout = on_stdout,
+    })
+    if is_sync then
+        self.__git_status_job:sync()
+    else
+        self.__git_status_job:start()
+    end
+end
 
+function Git:is_workspace_changed(ops)
     -- git root was not found
     if not self.__git_root then
         return nil
     end
 
-    return
+    if not self.__git_status_job then
+        self:__git_status(ops and ops.is_sync, function(_, data)
+            self.__is_changed = #data > 0
+        end)
+    end
+
+    return self.__is_changed ~= nil
 end
 
 return Git
