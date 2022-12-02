@@ -5,6 +5,8 @@ local eq = assert.are.equal
 
 local GitProvider = require('lualine.ex.git')
 
+-- run_it = it
+-- it = function() end
 
 describe('outside a git worktree', function()
     local tmp_dir
@@ -24,6 +26,11 @@ describe('outside a git worktree', function()
     it('git_root should return nil', function()
         local p = GitProvider:new(tmp_dir)
         eq(nil, p:git_root())
+    end)
+
+    it('is_workspace_changed should return nil', function()
+        local p = GitProvider:new(tmp_dir)
+        eq(nil, p:is_workspace_changed())
     end)
 end)
 
@@ -62,28 +69,7 @@ describe('inside the git worktree', function()
 
     it('is_workspace_changed should return false for a new git workspace', function()
         local p = GitProvider:new(git_root)
-        eq(false, p:is_workspace_changed({ is_sync = true }))
-    end)
-
-    it('is_workspace_changed should return true when a file was added', function()
-        local file = fs.path(git_root, 'test.txt')
-        fs.touch(file)
-        git.add(git_root, file)
-
-        local p = GitProvider:new(git_root)
-        eq(true, p:is_workspace_changed({ is_sync = true }))
-    end)
-
-    it('is_workspace_changed should return true when a file was changed', function()
-        local file = fs.path(git_root, 'test.txt')
-        fs.touch(file)
-        git.add(git_root, file)
-        git.commit(git_root, 'add file')
-        fs.write(file, 'test')
-        git.add(git_root, '.')
-
-        local p = GitProvider:new(git_root)
-        eq(true, p:is_workspace_changed({ is_sync = true }))
+        eq(false, p:is_workspace_changed())
     end)
 
     it('is_workspace_changed should return false right after commit all changes', function()
@@ -93,17 +79,105 @@ describe('inside the git worktree', function()
         git.commit(git_root, 'add file')
 
         local p = GitProvider:new(git_root)
-        eq(false, p:is_workspace_changed({ is_sync = true }))
+        eq(false, p:is_workspace_changed())
     end)
 
-    it('is_workspace_changed should return true when a file was removed', function()
-        local file = fs.path(git_root, 'test.txt')
-        fs.touch(file)
-        git.add(git_root, file)
-        git.commit(git_root, 'add file')
-        fs.remove(file)
+    describe('is_workspace_changed', function()
+        it('should return true when a new file was created', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
 
-        local p = GitProvider:new(git_root)
-        eq(true, p:is_workspace_changed({ is_sync = true }))
+            local p = GitProvider:new(git_root)
+            eq(true, p:is_workspace_changed())
+        end)
+
+        it('should return true when a file was changed', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
+            git.add(git_root, file)
+            git.commit(git_root, 'add file')
+            fs.write(file, 'test')
+
+            local p = GitProvider:new(git_root)
+            eq(true, p:is_workspace_changed())
+        end)
+
+        it('should return true when a file was removed', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
+            git.add(git_root, file)
+            git.commit(git_root, 'add file')
+            fs.remove(file)
+
+            local p = GitProvider:new(git_root)
+            eq(true, p:is_workspace_changed())
+        end)
+    end)
+
+    describe('is_workspace_changed if only_index = true', function()
+        it('should return false when a new file was created', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
+
+            local p = GitProvider:new(git_root)
+            -- FIXME: if not compare self.__is_workspace_changed with `true`,
+            -- here we have nil instead of `false`. I didn't find the reason yet
+            eq(false, p:is_workspace_changed({ only_index = true }))
+        end)
+
+        it('should return true when a new file was added', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
+            git.add(git_root, file)
+
+            local p = GitProvider:new(git_root)
+            eq(true, p:is_workspace_changed({ only_index = true }))
+        end)
+
+        it('should return false when a file was only changed', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
+            git.add(git_root, file)
+            git.commit(git_root, 'add file')
+            fs.write(file, 'test')
+
+            local p = GitProvider:new(git_root)
+            eq(false, p:is_workspace_changed({ only_index = true }))
+        end)
+
+        it('should return true when a file was changed and staged', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
+            git.add(git_root, file)
+            git.commit(git_root, 'add file')
+            fs.write(file, 'test')
+            git.add(git_root, '.')
+
+            local p = GitProvider:new(git_root)
+            eq(true, p:is_workspace_changed({ only_index = true }))
+        end)
+
+        it('should return false when a file was only removed', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
+            git.add(git_root, file)
+            git.commit(git_root, 'add file')
+            fs.remove(file)
+
+            local p = GitProvider:new(git_root)
+            eq(false, p:is_workspace_changed({ only_index = true }))
+        end)
+
+        it('should return true when a file was removed and staged', function()
+            local file = fs.path(git_root, 'test.txt')
+            fs.touch(file)
+            git.add(git_root, file)
+            git.commit(git_root, 'add file')
+            fs.remove(file)
+            git.add(git_root, '.')
+
+            local p = GitProvider:new(git_root)
+            eq(true, p:is_workspace_changed({ only_index = true }))
+        end)
     end)
 end)

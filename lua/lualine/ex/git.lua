@@ -98,39 +98,50 @@ function Git:get_branch()
     return self.__git_branch
 end
 
-function Git:__git_status(is_sync, on_stdout)
-    if not self:git_root() then
-        return
-    end
-    self.__git_status_job = Job:new({
-        command = 'git',
-        args = { 'status', '--porcelain' },
-        cwd = self:git_root(),
-        on_exit = function()
-            self.__git_status_job = nil
-        end,
-        on_stdout = on_stdout,
-    })
-    if is_sync then
-        self.__git_status_job:sync()
-    else
-        self.__git_status_job:start()
-    end
-end
-
+---Runs `git status` to ckeck the current status of the worktree.
+---@param ops.only_index boolean If true, any chanes outside the git index will be skipped.
+---@param ops.is_async If true, `git status` will be run in background and this method could return
+---     not actual result, which eventially become correct.
+---@return boolean | nil # The status of the worktree. If `git_root` is absent, then nil will be returned.
 function Git:is_workspace_changed(ops)
     -- git root was not found
     if not self.__git_root then
         return nil
     end
 
+    -- `git status` is not run yet
     if not self.__git_status_job then
-        self:__git_status(ops and ops.is_sync, function(_, data)
-            self.__is_changed = #data > 0
-        end)
+        local is_async = ops and ops.is_async
+        local only_index = ops and ops.only_index
+        local args = { 'status', '--porcelain' }
+        if only_index then
+            table.insert(args, '--untracked-files=no')
+        end
+
+        local on_stdout = function(err, data)
+            assert(not err, err)
+            self.__is_workspace_changed = (not only_index and #data > 0)
+                or (data:match('^%S') or data:match('\n%S')) ~= nil
+        end
+
+        self.__git_status_job = Job:new({
+            command = 'git',
+            args = args,
+            cwd = self:git_root(),
+            on_exit = function()
+                self.__git_status_job = nil
+            end,
+            on_stdout = on_stdout,
+        })
+
+        if is_async then
+            self.__git_status_job:start()
+        else
+            self.__git_status_job:sync()
+        end
     end
 
-    return self.__is_changed ~= nil
+    return self.__is_workspace_changed == true
 end
 
 return Git
