@@ -28,9 +28,9 @@ describe('outside a git worktree', function()
         eq(nil, p:git_root())
     end)
 
-    it('is_workspace_changed should return nil', function()
+    it('is_worktree_changed should return nil', function()
         local p = GitProvider:new(tmp_dir)
-        eq(nil, p:is_workspace_changed())
+        eq(nil, p:is_worktree_changed())
     end)
 end)
 
@@ -67,28 +67,28 @@ describe('inside the git worktree', function()
         eq('main', p:get_branch())
     end)
 
-    it('is_workspace_changed should return false for a new git workspace', function()
+    it('is_worktree_changed should return false for a new git workspace', function()
         local p = GitProvider:new(git_root)
-        eq(false, p:is_workspace_changed())
+        eq(false, p:is_worktree_changed())
     end)
 
-    it('is_workspace_changed should return false right after commit all changes', function()
+    it('is_worktree_changed should return false right after commit all changes', function()
         local file = fs.path(git_root, 'test.txt')
         fs.touch(file)
         git.add(git_root, file)
         git.commit(git_root, 'add file')
 
         local p = GitProvider:new(git_root)
-        eq(false, p:is_workspace_changed())
+        eq(false, p:is_worktree_changed())
     end)
 
-    describe('is_workspace_changed', function()
+    describe('is_worktree_changed', function()
         it('should return true when a new file was created', function()
             local file = fs.path(git_root, 'test.txt')
             fs.touch(file)
 
             local p = GitProvider:new(git_root)
-            eq(true, p:is_workspace_changed())
+            eq(true, p:is_worktree_changed())
         end)
 
         it('should return true when a file was changed', function()
@@ -99,7 +99,7 @@ describe('inside the git worktree', function()
             fs.write(file, 'test')
 
             local p = GitProvider:new(git_root)
-            eq(true, p:is_workspace_changed())
+            eq(true, p:is_worktree_changed())
         end)
 
         it('should return true when a file was removed', function()
@@ -110,19 +110,19 @@ describe('inside the git worktree', function()
             fs.remove(file)
 
             local p = GitProvider:new(git_root)
-            eq(true, p:is_workspace_changed())
+            eq(true, p:is_worktree_changed())
         end)
     end)
 
-    describe('is_workspace_changed if only_index = true', function()
+    describe('is_worktree_changed if only_index = true', function()
         it('should return false when a new file was created', function()
             local file = fs.path(git_root, 'test.txt')
             fs.touch(file)
 
             local p = GitProvider:new(git_root)
-            -- FIXME: if not compare self.__is_workspace_changed with `true`,
+            -- FIXME: if not compare self.__is_worktree_changed with `true`,
             -- here we have nil instead of `false`. I didn't find the reason yet
-            eq(false, p:is_workspace_changed({ only_index = true }))
+            eq(false, p:is_worktree_changed({ only_index = true }))
         end)
 
         it('should return true when a new file was added', function()
@@ -131,7 +131,7 @@ describe('inside the git worktree', function()
             git.add(git_root, file)
 
             local p = GitProvider:new(git_root)
-            eq(true, p:is_workspace_changed({ only_index = true }))
+            eq(true, p:is_worktree_changed({ only_index = true }))
         end)
 
         it('should return false when a file was only changed', function()
@@ -142,7 +142,7 @@ describe('inside the git worktree', function()
             fs.write(file, 'test')
 
             local p = GitProvider:new(git_root)
-            eq(false, p:is_workspace_changed({ only_index = true }))
+            eq(false, p:is_worktree_changed({ only_index = true }))
         end)
 
         it('should return true when a file was changed and staged', function()
@@ -154,7 +154,7 @@ describe('inside the git worktree', function()
             git.add(git_root, '.')
 
             local p = GitProvider:new(git_root)
-            eq(true, p:is_workspace_changed({ only_index = true }))
+            eq(true, p:is_worktree_changed({ only_index = true }))
         end)
 
         it('should return false when a file was only removed', function()
@@ -165,7 +165,7 @@ describe('inside the git worktree', function()
             fs.remove(file)
 
             local p = GitProvider:new(git_root)
-            eq(false, p:is_workspace_changed({ only_index = true }))
+            eq(false, p:is_worktree_changed({ only_index = true }))
         end)
 
         it('should return true when a file was removed and staged', function()
@@ -177,7 +177,7 @@ describe('inside the git worktree', function()
             git.add(git_root, '.')
 
             local p = GitProvider:new(git_root)
-            eq(true, p:is_workspace_changed({ only_index = true }))
+            eq(true, p:is_worktree_changed({ only_index = true }))
         end)
     end)
 end)

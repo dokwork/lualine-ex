@@ -103,7 +103,7 @@ end
 ---@param ops.is_async If true, `git status` will be run in background and this method could return
 ---     not actual result, which eventially become correct.
 ---@return boolean | nil # The status of the worktree. If `git_root` is absent, then nil will be returned.
-function Git:is_workspace_changed(ops)
+function Git:is_worktree_changed(ops)
     -- git root was not found
     if not self.__git_root then
         return nil
