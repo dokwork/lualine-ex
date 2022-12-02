@@ -128,8 +128,13 @@ function Git:is_worktree_changed(ops)
             command = 'git',
             args = args,
             cwd = self:git_root(),
-            on_exit = function()
+            on_exit = function(_, exit_code)
                 self.__git_status_job = nil
+                -- if index was empty, but git status completed successfully,
+                -- it means that worktree is not changed
+                if exit_code == 0 and self.__is_workspace_changed == nil then
+                    self.__is_workspace_changed = false
+                end
             end,
             on_stdout = on_stdout,
         })
@@ -141,7 +146,7 @@ function Git:is_worktree_changed(ops)
         end
     end
 
-    return self.__is_workspace_changed == true
+    return self.__is_workspace_changed
 end
 
 return Git

@@ -5,7 +5,8 @@ local eq = assert.are.equal
 
 local GitProvider = require('lualine.ex.git')
 
--- run_it = it
+-- it can be used to run a single test:
+local only_it = it
 -- it = function() end
 
 describe('outside a git worktree', function()
@@ -120,8 +121,6 @@ describe('inside the git worktree', function()
             fs.touch(file)
 
             local p = GitProvider:new(git_root)
-            -- FIXME: if not compare self.__is_worktree_changed with `true`,
-            -- here we have nil instead of `false`. I didn't find the reason yet
             eq(false, p:is_worktree_changed({ only_index = true }))
         end)
 
