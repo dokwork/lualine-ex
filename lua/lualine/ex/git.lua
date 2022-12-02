@@ -20,8 +20,8 @@ local function read(file_path)
     return content
 end
 
----@class Git: Object
----@field new fun(git_root_path: string): Git
+---@class GitProvider: Object
+---@field new fun(git_root_path: string): GitProvider
 --- Creates a new {Git} provider instance around {git_root_path}.
 local Git = require('lualine.utils.class'):extend()
 

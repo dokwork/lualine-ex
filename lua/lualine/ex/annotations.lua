@@ -69,6 +69,6 @@
 ---@field apply_icon fun()
 ---@field apply_padding fun()
 ---@field apply_on_click fun()
----@field apply_higlights fun(default_highlight: LualineHighlight)
+---@field apply_highlights fun(default_highlight: LualineHighlight)
 ---@field apply_section_separators fun()
 ---@field apply_separator fun()

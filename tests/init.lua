@@ -27,7 +27,6 @@ require('packer').startup(function(use)
         'nvim-lualine/lualine.nvim',
         requires = {
             { 'kyazdani42/nvim-web-devicons', opt = true },
-            { 'dokwork/lualine-ex', opt = true },
         },
     })
 end)
@@ -37,4 +36,18 @@ if packer_bootstrap then
     print('Please, restart nvim to use installed plugins.')
 else
     -- Configuration for tests:
+    require('lualine').setup({
+        options = {
+            theme = 'material',
+        },
+        sections = {
+            lualine_a = {
+                { 'ex.cwd', padding = 0, separator = '' },
+            },
+            lualine_b = {
+                { 'ex.relative_filename', padding = 0 },
+            },
+            lualine_c = { 'ex.git.branch' },
+        },
+    })
 end
