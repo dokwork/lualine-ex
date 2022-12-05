@@ -1,5 +1,5 @@
-local fs = require('tests.ex.fs')
-local git = require('tests.ex.git')
+local fs = require('tests.utils.fs')
+local git = require('tests.utils.git')
 
 local eq = assert.are.equal
 

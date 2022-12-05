@@ -16,22 +16,22 @@ local Ex = require('lualine.component'):extend()
 
 function Ex:extend(default_options)
     local cls = self.super.extend(self)
-    cls.default_options = vim.tbl_deep_extend('force', {
+    cls.default_options = ex.deep_merge(default_options, {
         always_show_icon = true,
         disabled_color = { fg = 'grey' },
-    }, default_options)
+    })
     return cls
 end
 
 function Ex:init(options)
     options = ex.deep_merge(options, self.default_options)
     Ex.super.init(self, options)
-    self:setup(options)
+    self:post_init(options)
 end
 
 ---Initialization hook. Runs right after {Ex.super.init}.
 ---@param options table The {ExComponentOptions} merged with {default_options}.
-function Ex:setup(options) end
+function Ex:post_init(options) end
 
 ---creates hl group from color option
 function Ex:create_option_highlights()
@@ -48,13 +48,13 @@ function Ex:is_enabled()
     return false
 end
 
-function Ex:is_disabled()
+function Ex:__is_disabled()
     return not self:is_enabled()
 end
 
 --- Disable component should have disabled color
 function Ex:__update_colors_if_disabled(is_focused)
-    if self:is_disabled() or not is_focused then
+    if self:__is_disabled() or not is_focused then
         self.options.color_highlight = self.options.__disabled_color_highlight
         self.options.icon_color_highlight = self.options.__disabled_color_highlight
     end
@@ -92,3 +92,5 @@ function Ex:draw(default_highlight, is_focused)
     end
     return self.status
 end
+
+return Ex
