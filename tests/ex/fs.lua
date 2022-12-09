@@ -1,10 +1,10 @@
-local M = {}
+local log = require('plenary.log').new({
+    plugin = "tests.utils.fs",
+    use_file = false,
+    use_console = 'sync'
+})
 
-function M.debug(msg)
-    if vim.env.DEBUG then
-        print('> ' .. msg)
-    end
-end
+local M = {}
 
 function M.path(...)
     local args = { ... }
@@ -12,12 +12,12 @@ function M.path(...)
 end
 
 function M.remove(path)
-    M.debug('Removing ' .. path)
+    log.trace('Removing ' .. path)
     os.execute('rm -rf ' .. path)
 end
 
 function M.mkdir(path)
-    M.debug('Making a new directory: ' .. path)
+    log.trace('Making a new directory: ' .. path)
     os.execute('mkdir ' .. path)
     local p, err = vim.loop.fs_realpath(path)
     assert(not err, err)
@@ -29,12 +29,11 @@ function M.mktmpdir(dir_name)
     local cwd = '/tmp/' .. dir_name
     M.remove(cwd)
     cwd = M.mkdir(cwd)
-    M.debug('Working directory for tests is ' .. cwd)
     return cwd
 end
 
 function M.touch(path)
-    M.debug('Touch file ' .. path)
+    log.trace('Touch file ' .. path)
     os.execute('touch ' .. path)
 end
 

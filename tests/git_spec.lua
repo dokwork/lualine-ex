@@ -1,13 +1,9 @@
-local fs = require('tests.utils.fs')
-local git = require('tests.utils.git')
+local fs = require('tests.ex.fs')
+local git = require('tests.ex.git')
 
 local eq = assert.are.equal
 
 local GitProvider = require('lualine.ex.git')
-
--- it can be used to run a single test:
-local only_it = it
--- it = function() end
 
 describe('outside a git worktree', function()
     local tmp_dir

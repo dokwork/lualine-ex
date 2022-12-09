@@ -1,8 +1,10 @@
 local ex = require('lualine.ex')
 
 ---@class ExComponentOptions: LualineComponentOptions
----@field always_show_icon boolean
+---@field always_show_icon boolean True means that icon should be shown even for inactive component.
 ---@field disabled_color Color
+---@field colors table<string, Color>
+---@field __hls table<string, LualineHighlight>
 ---@field __disabled_color_highlight LualineHighlight
 
 ---@class ExComponent: LualineComponent The extension of the {LualineComponent}
@@ -25,8 +27,16 @@ end
 
 function Ex:init(options)
     options = ex.deep_merge(options, self.default_options)
+    options = self:pre_init(options)
     Ex.super.init(self, options)
     self:post_init(options)
+end
+
+---Initialization hook. Runs before {Ex.super.init}.
+---@param options table The {ExComponentOptions} merged with {default_options}.
+---@return table # Optionally patched options.
+function Ex:pre_init(options)
+    return options
 end
 
 ---Initialization hook. Runs right after {Ex.super.init}.
@@ -38,8 +48,33 @@ function Ex:create_option_highlights()
     Ex.super.create_option_highlights(self)
     -- set disabled higlight
     if self.options.disabled_color then
-        self.options.__disabled_color_highlight = self:create_hl(self.options.disabled_color)
+        self.options.__disabled_color_highlight = self:create_hl(
+            self.options.disabled_color,
+            'disabled'
+        )
     end
+    -- set custom highlights
+    self.options.__hls = {}
+    for name, color in pairs(self.options.colors or {}) do
+        self.options.__hls[name] = self:create_hl(color, name)
+        -- self.options.__hls[name].no_mode = true
+    end
+end
+
+---@return string # The name of color from the {options.colors} which should be used for component.
+function Ex:custom_color() end
+
+---@return string # The name of color from the {options.colors} which should be used for icon.
+function Ex:custom_icon_color() end
+
+function Ex:__custom_hl()
+    local custom_color = self:custom_color()
+    return custom_color and self.options.__hls[custom_color]
+end
+
+function Ex:__custom_icon_hl()
+    local custom_color = self:custom_icon_color() or self:custom_color()
+    return custom_color and self.options.__hls[custom_color]
 end
 
 ---`true` means component enabled and must be shown. Disabled component has only icon with
@@ -48,13 +83,15 @@ function Ex:is_enabled()
     return false
 end
 
-function Ex:__is_disabled()
-    return not self:is_enabled()
-end
-
 --- Disable component should have disabled color
-function Ex:__update_colors_if_disabled(is_focused)
-    if self:__is_disabled() or not is_focused then
+function Ex:__update_colors(is_focused)
+    if not is_focused then
+        return
+    end
+    if self:is_enabled() then
+        self.options.color_highlight = self:__custom_hl()
+        self.options.icon_color_highlight = self:__custom_icon_hl()
+    else
         self.options.color_highlight = self.options.__disabled_color_highlight
         self.options.icon_color_highlight = self.options.__disabled_color_highlight
     end
@@ -70,19 +107,20 @@ function Ex:draw(default_highlight, is_focused)
         return self.status
     end
 
+    -- FIXME: maybe it would better to use "disabled" color here?
     self.default_hl = default_highlight
     local status = self:update_status()
     if self.options.fmt then
         status = self.options.fmt(status or '')
     end
     -- we have two option to turn icon off:
-    -- 1. turn all icons for components
+    -- 1. turn off all icons for components
     -- 2. turn off icon for disabled component only
-    local show_icons = self.options.icons_enabled and self.options.always_show_icon
+    local show_icon = self.options.icons_enabled and self.options.always_show_icon
 
-    if type(status) == 'string' and (#status > 0 or show_icons) then
+    if type(status) == 'string' and (#status > 0 or show_icon) then
         self.status = status
-        self:__update_colors_if_disabled(is_focused)
+        self:__update_colors(is_focused)
         self:apply_icon()
         self:apply_padding()
         self:apply_on_click()
