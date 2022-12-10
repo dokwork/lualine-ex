@@ -6,10 +6,7 @@ local log = require('plenary.log').new({
 
 local Git = {}
 
-local dev_null = ' &> /dev/null'
-if not vim.fn.getenv('DEBUG_PLENARY') then
-    dev_null = ''
-end
+local dev_null = (vim.env.DEBUG or vim.env.DEBUG_PLENARY) and '' or ' &> /dev/null'
 
 local function git(git_root, ...)
     local cmd = table.concat({ ... }, ' ')
@@ -28,7 +25,7 @@ function Git.add(git_root, file)
 end
 
 function Git.commit(git_root, message)
-    git(git_root, 'commit', '--author="Test <test@example.com>"', '-m', '"' .. message .. '"')
+    git(git_root, 'commit', '-m', '"' .. message .. '"')
 end
 
 return Git

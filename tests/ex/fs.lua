@@ -12,12 +12,12 @@ function M.path(...)
 end
 
 function M.remove(path)
-    log.trace('Removing ' .. path)
+    log.debug('Removing ' .. path)
     os.execute('rm -rf ' .. path)
 end
 
 function M.mkdir(path)
-    log.trace('Making a new directory: ' .. path)
+    log.debug('Making a new directory: ' .. path)
     os.execute('mkdir ' .. path)
     local p, err = vim.loop.fs_realpath(path)
     assert(not err, err)
@@ -26,14 +26,14 @@ end
 
 function M.mktmpdir(dir_name)
     dir_name = dir_name or ('dir_' .. math.random(999))
-    local cwd = '/tmp/' .. dir_name
+    local cwd = M.path(vim.env.TMPDIR or '/tmp', dir_name)
     M.remove(cwd)
     cwd = M.mkdir(cwd)
     return cwd
 end
 
 function M.touch(path)
-    log.trace('Touch file ' .. path)
+    log.debug('Touch file ' .. path)
     os.execute('touch ' .. path)
 end
 
