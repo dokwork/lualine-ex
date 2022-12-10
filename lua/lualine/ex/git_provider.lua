@@ -120,25 +120,26 @@ function Git:is_worktree_changed(is_sync)
     -- `git status` is not run yet
     if not self.__git_status_job then
         local args = { 'status', '--porcelain', '--untracked-files=no' }
-        local on_stdout = function(err, data)
-            assert(not err, err)
-            self.__is_workspace_changed = #data > 0
-        end
 
         self.__git_status_job = Job:new({
             command = 'git',
             args = args,
             cwd = self:git_root(),
             on_exit = function(_, exit_code)
-                self.__git_status_job = nil
-                -- if index was empty, but git status completed successfully,
+                -- if list of changes was empty, but git status completed successfully,
                 -- it means that worktree is not changed
-                if exit_code == 0 and self.__is_workspace_changed == nil then
+                if exit_code == 0 and self.__git_status_job.stdout_was_empty then
                     self.__is_workspace_changed = false
                 end
+                self.__git_status_job = nil
             end,
-            on_stdout = on_stdout,
+            on_stdout = function(err, data)
+                assert(not err, err)
+                self.__git_status_job.stdout_was_empty = false
+                self.__is_workspace_changed = #data > 0
+            end,
         })
+        self.__git_status_job.stdout_was_empty = true
 
         if is_sync then
             self.__git_status_job:sync()
