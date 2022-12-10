@@ -1,5 +1,5 @@
 local log = require('plenary.log').new({
-    plugin = 'tests.utils.fs',
+    plugin = 'tests.ex.fs',
     use_file = false,
     use_console = 'sync',
 })

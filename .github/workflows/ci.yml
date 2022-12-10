@@ -52,4 +52,4 @@ jobs:
           git clone --depth 1 https://github.com/nvim-lualine/lualine.nvim ~/.local/share/nvim/site/pack/vendor/start/lualine.nvim
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
       - name: Run tests
-        run: nvim --headless -u tests/init.vim -c "PlenaryBustedDirectory tests/ { minimal_init = './tests/init.vim' }"
+        run: make test DEBUG_PLENARY=true

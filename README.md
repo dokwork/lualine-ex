@@ -4,8 +4,7 @@
 
 This is a [plugin](https://github.com/nvim-lualine/lualine.nvim/wiki/Plugins) 
 for the [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) 
-with additional [components](#components) and [extended class of the component](#ex_component),
-which provides additional functionality.
+with additional [components](#Components), and an extended class of the `lualine.component` with additional functionality.
 
 ## Installation
 
@@ -15,15 +14,16 @@ which provides additional functionality.
 use {
     'nvim-lualine/lualine.nvim',
     requires = { 
+      { 'nvim-lua/plenary.nvim' },
+      { 'dokwork/lualine-ex' },
       { 'kyazdani42/nvim-web-devicons', opt = true  },
-      { 'dokwork/lualine-ex' }
     }
 }
 ```
 
 ## Components
 
-### 'ex.git.branch'
+### ex.git.branch
 
 This component provides a name of the git branch for the current working directory.
 The color of this component depends on the state of the git worktree. The component
@@ -55,9 +55,9 @@ sections = {
 }
 ```
 
-## <a href="ex_component"/>Ex.Component
+## ExComponent
 
-`Ex.Component` is an abstract class, which extends the `lualine.component` to provide additional
+`ExComponent` is an abstract class, which extends the `lualine.component` to provide additional
 functionality:
 
  1. Use custom color for a component
