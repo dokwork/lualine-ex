@@ -3,7 +3,7 @@ local git = require('tests.ex.git')
 
 local eq = assert.are.equal
 
-local GitProvider = require('lualine.ex.git')
+local GitProvider = require('lualine.ex.git_provider')
 
 describe('outside a git worktree', function()
     local tmp_dir

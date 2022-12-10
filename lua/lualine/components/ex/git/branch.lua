@@ -1,4 +1,4 @@
-local Git = require('lualine.ex.git')
+local Git = require('lualine.ex.git_provider')
 
 ---@class GitBranchColors
 ---@field changed Color

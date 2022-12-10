@@ -3,6 +3,11 @@ local fn = vim.fn
 local uv = vim.loop
 
 local Job = require('plenary.job')
+local log = require('plenary.log').new({
+    plugin = 'ex.git_provider',
+    use_file = false,
+    use_console = 'sync',
+})
 
 local function path(...)
     local args = { ... }
