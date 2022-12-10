@@ -58,9 +58,8 @@ function M.match_rendered_component(rendered_component)
     if not t.component_hl then
         t.hl, t.value = string.match(rendered_component, ptrn_hl .. ptrn_value)
     end
-    if t.hl then
-        t.color = { fg = M.get_color(t.hl, 'fg#'), bg = M.get_color(t.hl, 'bg#') }
-    end
+    assert(t.hl, string.format('String [%s] was not matched', rendered_component))
+    t.color = { fg = M.get_color(t.hl, 'fg#'), bg = M.get_color(t.hl, 'bg#') }
     return t
 end
 

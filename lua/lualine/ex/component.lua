@@ -2,7 +2,6 @@ local ex = require('lualine.ex')
 
 ---@class ExComponentOptions: LualineComponentOptions
 ---@field always_show_icon boolean True means that icon should be shown even for inactive component.
----@field disabled_color Color
 ---@field colors table<string, Color>
 ---@field __hls table<string, LualineHighlight>
 ---@field __disabled_color_highlight LualineHighlight
@@ -20,7 +19,7 @@ function Ex:extend(default_options)
     local cls = self.super.extend(self)
     cls.default_options = ex.deep_merge(default_options, {
         always_show_icon = true,
-        disabled_color = { fg = 'grey' },
+        colors = { disabled = { fg = 'grey' } },
     })
     return cls
 end
@@ -46,13 +45,6 @@ function Ex:post_init(options) end
 ---creates hl group from color option
 function Ex:create_option_highlights()
     Ex.super.create_option_highlights(self)
-    -- set disabled higlight
-    if self.options.disabled_color then
-        self.options.__disabled_color_highlight = self:create_hl(
-            self.options.disabled_color,
-            'disabled'
-        )
-    end
     -- set custom highlights
     self.options.__hls = {}
     for name, color in pairs(self.options.colors or {}) do
@@ -89,11 +81,12 @@ function Ex:__update_colors(is_focused)
         return
     end
     if self:is_enabled() then
-        self.options.color_highlight = self:__custom_hl()
+        self.options.color_highlight = self:__custom_hl() or self.options.color_highlight
         self.options.icon_color_highlight = self:__custom_icon_hl()
+            or self.options.icon_color_highlight
     else
-        self.options.color_highlight = self.options.__disabled_color_highlight
-        self.options.icon_color_highlight = self.options.__disabled_color_highlight
+        self.options.color_highlight = self.options.__hls.disabled
+        self.options.icon_color_highlight = self.options.__hls.disabled
     end
 end
 
