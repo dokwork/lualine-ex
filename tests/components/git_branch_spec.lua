@@ -3,7 +3,7 @@ local log = require('plenary.log').new({
     use_file = false,
     use_console = 'sync',
 })
-local t = require('tests.ex.busted')--:ignore_all_tests()
+local b = require('tests.ex.busted')--:ignore_all_tests()
 local l = require('tests.ex.lualine')
 local fs = require('tests.ex.fs')
 local git = require('tests.ex.git')
@@ -29,15 +29,17 @@ describe('ex.git.branch component', function()
             fs.remove(cwd)
         end)
 
-        it('should be enabled', function()
+        it('should be disabled', function()
             local c = l.init_component(component_name)
             eq(false, c:is_enabled())
         end)
 
-        it('should have only icon with disabled hl', function()
-            local c_tbl = l.extract_component(component_name)
+        it('should have only icon with disabled color', function()
+            local disabled_color = { fg = 'grey' }
+            local opts = l.opts({ colors = { disabled = disabled_color } })
+            local c_tbl = l.extract_component(component_name, opts)
             eq(' ', c_tbl.icon)
-            eq('lualine_c_2_inactive', c_tbl.icon_hl)
+            l.eq_colors(disabled_color.fg, c_tbl.icon_color.fg)
         end)
     end)
 
@@ -72,8 +74,12 @@ describe('ex.git.branch component', function()
         end)
 
         it('rendered component should have "commited" color', function()
-            local c_tbl = l.extract_component(component_name)
-            eq('lualine_c_2_inactive', c_tbl.icon_hl)
+            local commited_color = { fg = 'green' }
+            local opts = l.opts({ colors = { commited = commited_color }, async = false })
+            local rendered_component = l.render_component(component_name, opts)
+            local c_tbl = l.match_rendered_component(rendered_component)
+            l.eq_colors(commited_color.fg, c_tbl.color.fg, 'Wrong color for component in ' .. rendered_component)
+            l.eq_colors(commited_color.fg, c_tbl.icon_color.fg, 'Wrong color for icon in ' .. rendered_component)
         end)
     end)
 end)

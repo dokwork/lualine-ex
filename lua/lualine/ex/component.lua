@@ -57,7 +57,9 @@ end
 function Ex:custom_color() end
 
 ---@return string # The name of color from the {options.colors} which should be used for icon.
-function Ex:custom_icon_color() end
+function Ex:custom_icon_color()
+    return self:custom_color()
+end
 
 function Ex:__custom_hl()
     local custom_color = self:custom_color()
