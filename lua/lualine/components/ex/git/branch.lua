@@ -62,10 +62,11 @@ end
 
 function GitBranch:custom_color()
     local is_worktree_changed = self.git
-        and self.git():is_worktree_changed({
-            only_index = true,
-            is_async = true,
-        })
+        and self.git():is_worktree_changed()
+    -- do not change color for unknown state
+    if is_worktree_changed == nil then
+        return
+    end
     return is_worktree_changed and 'changed' or 'commited'
 end
 

@@ -64,10 +64,13 @@ end
 ---@return string # The name of the current branch or first 7 symbols of the commit's hash.
 function Git:__read_git_branch()
     local head = read(path(self:git_root(), '.git', 'HEAD'))
-    local branch = string.match(head, 'ref: refs/heads/(%w+)')
-        or string.match(head, 'ref: refs/tags/(%w+)')
-        or string.match(head, 'ref: refs/remotes/(%w+)')
-    return branch or head:sub(1, #head - 7)
+    local branch = head
+        and (
+            string.match(head, 'ref: refs/heads/(%w+)')
+            or string.match(head, 'ref: refs/tags/(%w+)')
+            or string.match(head, 'ref: refs/remotes/(%w+)')
+        )
+    return branch or (head and head:sub(1, #head - 7))
 end
 
 ---Returns a path to the root git directory, or nil with error message if path is not exists.
@@ -99,11 +102,11 @@ function Git:get_branch()
 end
 
 ---Runs `git status` to ckeck the current status of the worktree.
----@param ops.only_index boolean If true, any chanes outside the git index will be skipped.
----@param ops.is_async If true, `git status` will be run in background and this method could return
+---@param is_sync boolean If true, `git status` will be run in background and this method could return
 ---     not actual result, which eventially become correct.
----@return boolean | nil # The status of the worktree. If `git_root` is absent, then nil will be returned.
-function Git:is_worktree_changed(ops)
+---@return boolean | nil # The status of the worktree. In async mode can return nil at first time.
+---   If `git_root` is absent, then nil will be returned.
+function Git:is_worktree_changed(is_sync)
     -- git root was not found
     if not self.__git_root then
         return nil
@@ -111,17 +114,10 @@ function Git:is_worktree_changed(ops)
 
     -- `git status` is not run yet
     if not self.__git_status_job then
-        local is_async = ops and ops.is_async
-        local only_index = ops and ops.only_index
-        local args = { 'status', '--porcelain' }
-        if only_index then
-            table.insert(args, '--untracked-files=no')
-        end
-
+        local args = { 'status', '--porcelain', '--untracked-files=no' }
         local on_stdout = function(err, data)
             assert(not err, err)
-            self.__is_workspace_changed = (not only_index and #data > 0)
-                or (data:match('^%S') or data:match('\n%S')) ~= nil
+            self.__is_workspace_changed = #data > 0
         end
 
         self.__git_status_job = Job:new({
@@ -139,10 +135,10 @@ function Git:is_worktree_changed(ops)
             on_stdout = on_stdout,
         })
 
-        if is_async then
-            self.__git_status_job:start()
-        else
+        if is_sync then
             self.__git_status_job:sync()
+        else
+            self.__git_status_job:start()
         end
     end
 

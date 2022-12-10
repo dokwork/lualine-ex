@@ -9,7 +9,6 @@ local fs = require('tests.ex.fs')
 local git = require('tests.ex.git')
 
 local eq = assert.are.equal
-local neq = assert.are.not_equal
 local function trim(str)
     return string.match(str, '%s*(%S+)%s*')
 end
