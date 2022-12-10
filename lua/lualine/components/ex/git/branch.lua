@@ -63,8 +63,7 @@ function GitBranch:is_enabled()
 end
 
 function GitBranch:custom_color()
-    local is_worktree_changed = self.git
-        and self.git():is_worktree_changed(not self.options.async)
+    local is_worktree_changed = self.git and self.git():is_worktree_changed(not self.options.async)
     -- do not change color for unknown state
     if is_worktree_changed == nil then
         return 'disabled'

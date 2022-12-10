@@ -3,7 +3,7 @@ local log = require('plenary.log').new({
     use_file = false,
     use_console = 'sync',
 })
-local b = require('tests.ex.busted')--:ignore_all_tests()
+local b = require('tests.ex.busted') --:ignore_all_tests()
 local l = require('tests.ex.lualine')
 local fs = require('tests.ex.fs')
 local git = require('tests.ex.git')
@@ -78,8 +78,16 @@ describe('ex.git.branch component', function()
             local opts = l.opts({ colors = { commited = commited_color }, async = false })
             local rendered_component = l.render_component(component_name, opts)
             local c_tbl = l.match_rendered_component(rendered_component)
-            l.eq_colors(commited_color.fg, c_tbl.color.fg, 'Wrong color for component in ' .. rendered_component)
-            l.eq_colors(commited_color.fg, c_tbl.icon_color.fg, 'Wrong color for icon in ' .. rendered_component)
+            l.eq_colors(
+                commited_color.fg,
+                c_tbl.color.fg,
+                'Wrong color for component in ' .. rendered_component
+            )
+            l.eq_colors(
+                commited_color.fg,
+                c_tbl.icon_color.fg,
+                'Wrong color for icon in ' .. rendered_component
+            )
         end)
     end)
 end)
