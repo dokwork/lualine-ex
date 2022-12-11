@@ -37,9 +37,9 @@ describe('ex.git.branch component', function()
         it('should have only icon with disabled color', function()
             local disabled_color = { fg = 'grey' }
             local opts = l.opts({ colors = { disabled = disabled_color } })
-            local c_tbl = l.extract_component(component_name, opts)
-            eq(' ', c_tbl.icon)
-            l.eq_colors(disabled_color.fg, c_tbl.icon_color.fg)
+            local ctbl = l.extract_component(component_name, opts)
+            eq(' ', ctbl.icon)
+            l.eq_colors(disabled_color.fg, ctbl.icon_color.fg)
         end)
     end)
 
@@ -68,25 +68,20 @@ describe('ex.git.branch component', function()
         end)
 
         it('rendered component should have a branch name and icon', function()
-            local c_tbl = l.extract_component(component_name)
-            eq('main', trim(c_tbl.value))
-            eq(' ', c_tbl.icon)
+            local rendered_component = l.render_component(component_name)
+            local ctbl = l.match_rendered_component(rendered_component)
+            eq('  main', ctbl.value, 'Wrong value from: ' .. rendered_component)
         end)
 
         it('rendered component should have "commited" color', function()
             local commited_color = { fg = 'green' }
             local opts = l.opts({ colors = { commited = commited_color }, async = false })
             local rendered_component = l.render_component(component_name, opts)
-            local c_tbl = l.match_rendered_component(rendered_component)
+            local ctbl = l.match_rendered_component(rendered_component)
             l.eq_colors(
                 commited_color.fg,
-                c_tbl.color.fg,
+                ctbl.color.fg,
                 'Wrong color for component in ' .. rendered_component
-            )
-            l.eq_colors(
-                commited_color.fg,
-                c_tbl.icon_color.fg,
-                'Wrong color for icon in ' .. rendered_component
             )
         end)
     end)

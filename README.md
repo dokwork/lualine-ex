@@ -27,10 +27,11 @@ use {
 
 This component provides a name of the git branch for the current working directory.
 The color of this component depends on the state of the git worktree. The component
-can show three different states:
-  - `disabled` means that the current working directory is not under git control
+can show different states:
   - `changed` means that at least one uncommitted change exists
   - `commited` means that everything is committed, and no one tracked file is changed.
+If the `cwd` is not under git control, this component is `disabled`. By default, for a disabled 
+component an icon is shown.
 
 ```lua
 sections = {
@@ -46,8 +47,9 @@ sections = {
       colors = {
           changed = { fg = 'orange' },
           commited = { fg = 'green' },
-          disabled = { fg = 'grey' }
       },
+      -- color for disabled component
+      disabled_color = { fg = 'grey' }
       -- `true` means that icon must be shown even in case when no git repository
       always_show_icon = true
     }
@@ -57,8 +59,6 @@ sections = {
 
 ## ExComponent
 
-`ExComponent` is an abstract class, which extends the `lualine.component` to provide additional
-functionality:
-
- 1. Use custom color for a component
- 1. Show 'disabled' state of a component instead to completely hide it
+`ExComponent` is an abstract class, which extends the `lualine.component` to make it possible to
+show an icon even for empty component in 'disabled' state. State of the component depends on result
+of the `is_enabled` function.

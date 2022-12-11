@@ -20,7 +20,7 @@ describe('A child of the ex.component', function()
         -- when:
         local Ex = require('lualine.ex.component'):extend({})
         -- then:
-        neq(nil, Ex.default_options.colors.disabled)
+        neq(nil, Ex.default_options.disabled_color)
     end)
 
     describe('on initialization', function()
@@ -43,14 +43,51 @@ describe('A child of the ex.component', function()
     end)
 
     describe('on draw', function()
-        it('should use `disabled` color if the component is not enabled', function()
+        it('should show icon even for empty component in disabled state', function()
             -- given:
-            local Child = require('lualine.ex.component'):extend({})
+            local Child = require('lualine.ex.component'):extend({
+                icon = '!',
+                is_enabled = false,
+            })
+            function Child:update_status()
+                return ''
+            end
+            local cmp = Child(u.opts())
+
+            -- when:
+            local rendered_component = u.render_component(cmp)
+            local ctbl = u.match_rendered_component(rendered_component)
+
+            -- then:
+            eq('!', ctbl.icon, 'Unexpected icon from rendered component: ' .. rendered_component)
+        end)
+
+        it('should not show icon for empty component if always_show_icon = false', function()
+            -- given:
+            local Child = require('lualine.ex.component'):extend({
+                icon = '!',
+                is_enabled = false,
+                always_show_icon = false,
+            })
+            function Child:update_status()
+                return ''
+            end
+            local cmp = Child(u.opts())
+
+            -- when:
+            local rendered_component = u.render_component(cmp)
+
+            -- then:
+            eq('', rendered_component)
+        end)
+
+        it('should use `disabled_color` if the component is not enabled', function()
+            -- given:
+            local Child = require('lualine.ex.component'):extend({
+                is_enabled = false,
+            })
             function Child:update_status()
                 return 'status'
-            end
-            function Child:is_enabled()
-                return false
             end
             local cmp = Child(u.opts())
 
@@ -60,32 +97,8 @@ describe('A child of the ex.component', function()
 
             -- then:
             local expected_fg = tonumber(
-                uc.rgb2cterm(uc.color_name2rgb(Child.default_options.colors.disabled.fg))
+                uc.rgb2cterm(uc.color_name2rgb(Child.default_options.disabled_color.fg))
             )
-            eq(expected_fg, tonumber(ctbl.color.fg))
-        end)
-
-        it('should use custom color if the component is enabled', function()
-            -- given:
-            local colors = { test = { fg = 'red' } }
-            local Child = require('lualine.ex.component'):extend({ colors = colors })
-            function Child:custom_color()
-                return 'test'
-            end
-            function Child:update_status()
-                return 'status'
-            end
-            function Child:is_enabled()
-                return true
-            end
-            local cmp = Child(u.opts())
-
-            -- when:
-            local rendered_component = u.render_component(cmp)
-            local ctbl = u.match_rendered_component(rendered_component)
-
-            -- then:
-            local expected_fg = tonumber(uc.rgb2cterm(uc.color_name2rgb(colors.test.fg)))
             eq(expected_fg, tonumber(ctbl.color.fg))
         end)
     end)

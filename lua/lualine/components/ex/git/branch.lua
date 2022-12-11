@@ -33,6 +33,21 @@ local git_providers = {}
 ---@field git fun(): GitProvider
 local GitBranch = require('lualine.ex.component'):extend(default_options)
 
+function GitBranch:pre_init(options)
+    if options.color then
+        return
+    end
+    options.color = function()
+        local is_worktree_changed = self.git
+            and self.git():is_worktree_changed(not self.options.async)
+        -- do not change color for unknown state
+        if is_worktree_changed == nil then
+            return options.disabled_color
+        end
+        return is_worktree_changed and options.colors.changed or options.colors.commited
+    end
+end
+
 function GitBranch:post_init()
     self.git = function()
         -- the shortest way to get actual provider:
@@ -60,15 +75,6 @@ end
 
 function GitBranch:is_enabled()
     return self.git():git_root() ~= nil
-end
-
-function GitBranch:custom_color()
-    local is_worktree_changed = self.git and self.git():is_worktree_changed(not self.options.async)
-    -- do not change color for unknown state
-    if is_worktree_changed == nil then
-        return 'disabled'
-    end
-    return is_worktree_changed and 'changed' or 'commited'
 end
 
 function GitBranch:update_status()
