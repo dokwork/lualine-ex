@@ -1,37 +1,84 @@
-local ex = require('lualine.ex')
-
----@class GitBranch: ExComponent
----@field options GitBranchOptions
-local GitBranch = require('lualine.ex.component'):extend()
+local Git = require('lualine.ex.git_provider')
 
 ---@class GitBranchColors
 ---@field changed Color
 ---@field commited Color
 
 ---@class GitBranchOptions: ExComponentOptions
+---@field icon Icon
+---@field async boolean
 ---@field colors GitBranchColors
-GitBranch.default_options = {
+local default_options = {
     icon = ' ',
+    async = true,
     colors = {
         changed = { fg = 'orange' },
         commited = { fg = 'green' },
     },
-    is_enabled = g.is_git_workspace,
 }
 
-function GitBranch:setup(options)
-    assert(vim.b.gitsigns_status_dict, 'You should have Gitsigns installed.')
+---Singleton instance for any non git paths
+local empty_provider = {
+    git_root = function() end,
+    get_branch = function() end,
+    is_worktree_changed = function() end,
+}
+
+-- global cache of git providers for {git_root}s.
+-- It helps to reduce count of active providers.
+local git_providers = {}
+
+---@class GitBranch: ExComponent
+---@field options GitBranchOptions
+---@field git fun(): GitProvider
+local GitBranch = require('lualine.ex.component'):extend(default_options)
+
+function GitBranch:pre_init(options)
+    if options.color then
+        return
+    end
+    options.color = function()
+        local is_worktree_changed = self.git
+            and self.git():is_worktree_changed(not self.options.async)
+        -- do not change color for unknown state
+        if is_worktree_changed == nil then
+            return options.disabled_color
+        end
+        return is_worktree_changed and options.colors.changed or options.colors.commited
+    end
+end
+
+function GitBranch:post_init()
+    self.git = function()
+        -- the shortest way to get actual provider:
+        if vim.b.ex_git_root and git_providers[vim.b.ex_git_root] then
+            return git_providers[vim.b.ex_git_root]
+        end
+        local path = vim.fs.normalize(vim.fn.getcwd())
+        local git_root = Git.find_git_root(path)
+        if not git_root then
+            return empty_provider
+        end
+        -- put git root to buffer local for optimization
+        local buf_path = vim.fs.normalize(vim.fn.expand('%:p'))
+        if #buf_path > 0 and string.find(path, buf_path) then
+            -- we can't put provider to buf local, because metatable will be lost.
+            vim.b.ex_git_root = git_root
+        end
+        -- looking for provider in the cache, or put a new
+        if not git_providers[git_root] then
+            git_providers[git_root] = Git:new(git_root)
+        end
+        return git_providers[git_root]
+    end
 end
 
 function GitBranch:is_enabled()
-    local is_disabled = self.options.is_enabled and not self.options.is_enabled()
-    return not is_disabled
+    return self.git():git_root() ~= nil
 end
 
 function GitBranch:update_status()
-    local colors = self.options.colors
-    self.options.color = g.is_file_changed() and colors.changed or colors.commited
-    return self:is_enabled() and g.git_branch() or ''
+    return self.git():get_branch() or ''
 end
 
 return GitBranch

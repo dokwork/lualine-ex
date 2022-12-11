@@ -1,68 +1,94 @@
 local ex = require('lualine.ex')
 
 ---@class ExComponentOptions: LualineComponentOptions
----@field is_enabled fun(): boolean
----@field always_show_icon boolean
+---@field always_show_icon boolean True means that icon should be shown even for inactive component.
 ---@field disabled_color Color
----@field disabled_color_highlight LualineHighlight
+---@field is_enabled boolean | fun(): boolean
+---@field __disabled_hl LualineHighlight
 
 ---@class ExComponent: LualineComponent The extension of the {LualineComponent}
---- which provide ability to mark the component as disabled and use custom icon and color
---- for disabled  state.
----
+--- which provide ability to mark the component as disabled and use a custom icon
+--- and a color for disabled state.
 ---@field super LualineComponent
 ---@field self ExComponent
 ---@field default_options table
 ---@field options ExComponentOptions
----@field setup fun()
 local Ex = require('lualine.component'):extend()
+
+function Ex:extend(default_options)
+    local cls = self.super.extend(self)
+    cls.default_options = ex.deep_merge(default_options, {
+        always_show_icon = true,
+        disabled_color = { fg = 'grey' },
+        is_enabled = true,
+    })
+    return cls
+end
 
 function Ex:init(options)
     options = ex.deep_merge(options, self.default_options)
+    self:pre_init(options)
     Ex.super.init(self, options)
-    self:setup(options)
+    self:post_init(options)
 end
 
-function Ex:setup(options) end
+---Initialization hook. Runs before {Ex.super.init}.
+---@param options table The {ExComponentOptions} merged with {default_options}.
+---@return table # Optionally patched options.
+function Ex:pre_init(options) end
+
+---Initialization hook. Runs right after {Ex.super.init}.
+---@param options table The {ExComponentOptions} merged with {default_options}.
+function Ex:post_init(options) end
 
 ---creates hl group from color option
 function Ex:create_option_highlights()
     Ex.super.create_option_highlights(self)
-    -- set disabled higlight
-    if self.options.disabled_color then
-        self.options.disabled_color_highlight = self:create_hl(self.options.disabled_color)
-    end
+    -- set disabled highlight
+    self.options.__disabled_hl = self:create_hl(self.options.disabled_color, 'disabled')
 end
 
+---`true` means component enabled and must be shown. Disabled component has only icon with
+--- {options.disabled_color}. This method must be overrided.
 function Ex:is_enabled()
-    local is_disabled = self.options.is_enabled and not self.options.is_enabled()
-    return not is_disabled
+    if self.options.is_enabled and type(self.options.is_enabled) == 'function' then
+        return self.options.is_enabled()
+    end
+    return self.options.is_enabled ~= nil and self.options.is_enabled
 end
 
-function Ex:update_colors_if_disabled(is_focused)
-    if not self:is_enabled() or not is_focused then
-        self.options.color_highlight = self.options.disabled_color_highlight
-        self.options.icon_color_highlight = self.options.disabled_color_highlight
+--- Disable component should have disabled color
+function Ex:__update_colors_if_disabled()
+    if not self:is_enabled() then
+        self.options.color_highlight = self.options.__disabled_hl
+        self.options.icon_color_highlight = self.options.__disabled_hl
     end
 end
 
+---Overrided method to draw this component.
 function Ex:draw(default_highlight, is_focused)
     self.status = ''
     self.applied_separator = ''
 
+    -- if options.cond is not true, component should not be rendered at all.
     if self.options.cond ~= nil and self.options.cond() ~= true then
         return self.status
     end
 
     self.default_hl = default_highlight
-    local status = self:update_status()
+    local status = self:update_status(is_focused)
     if self.options.fmt then
         status = self.options.fmt(status or '')
     end
-    local show_icons = self.options.icons_enabled and self.options.always_show_icon
-    if type(status) == 'string' and (#status > 0 or show_icons) then
+    -- we have two option to turn icon off:
+    -- 1. turn off all icons for components
+    -- 2. turn off icon for disabled component only
+    local show_icon = self.options.icons_enabled
+        and (self:is_enabled() or self.options.always_show_icon)
+
+    if type(status) == 'string' and (#status > 0 or show_icon) then
         self.status = status
-        self:update_colors_if_disabled(is_focused)
+        self:__update_colors_if_disabled()
         self:apply_icon()
         self:apply_padding()
         self:apply_on_click()
@@ -72,3 +98,5 @@ function Ex:draw(default_highlight, is_focused)
     end
     return self.status
 end
+
+return Ex

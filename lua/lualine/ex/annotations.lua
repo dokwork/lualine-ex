@@ -66,9 +66,10 @@
 ---@field create_option_highlights fun()
 ---@field create_hl fun(color: table|string|function, hint?: string): table
 ---@field update_status fun(is_focused: boolean)
+---@field draw fun(default_highlight: string, is_focused: boolean): string
 ---@field apply_icon fun()
 ---@field apply_padding fun()
 ---@field apply_on_click fun()
----@field apply_higlights fun(default_highlight: LualineHighlight)
+---@field apply_highlights fun(default_highlight: LualineHighlight)
 ---@field apply_section_separators fun()
 ---@field apply_separator fun()
