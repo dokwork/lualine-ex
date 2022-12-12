@@ -55,7 +55,8 @@
 ---@field cond fun(): boolean
 ---@field fmt fun(status: string): string
 ---@field icons_enabled boolean
----@field icon_color_highlight LualineHighlight table identifier received from create_hl or create_component_highlight_group
+---@field color_highlight LualineHighlight
+---@field icon_color_highlight LualineHighlight
 
 ---@class LualineComponent: Object
 ---@field super Object

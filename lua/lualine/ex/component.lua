@@ -3,8 +3,12 @@ local ex = require('lualine.ex')
 ---@class ExComponentOptions: LualineComponentOptions
 ---@field always_show_icon boolean True means that icon should be shown even for inactive component.
 ---@field disabled_color Color
+---@field disabled_icon_color Color
 ---@field is_enabled boolean | fun(): boolean
+---@field __enabled_hl LualineHighlight
+---@field __enabled_icon_hl LualineHighlight
 ---@field __disabled_hl LualineHighlight
+---@field __disabled_icon_hl LualineHighlight
 
 ---@class ExComponent: LualineComponent The extension of the {LualineComponent}
 --- which provide ability to mark the component as disabled and use a custom icon
@@ -44,12 +48,18 @@ function Ex:post_init(options) end
 ---creates hl group from color option
 function Ex:create_option_highlights()
     Ex.super.create_option_highlights(self)
-    -- set disabled highlight
+    -- remember enabled highlights
+    self.options.__enabled_hl = self.options.color_highlight
+    self.options.__enabled_icon_hl = self.options.icon_color_highlight
+    -- set disabled highlights
     self.options.__disabled_hl = self:create_hl(self.options.disabled_color, 'disabled')
+    self.options.__disabled_icon_hl = self.options.disabled_icon_color
+            and self:create_hl(self.options.disabled_icon_color, 'disabled_icon')
+        or self.options.__disabled_hl
 end
 
 ---`true` means component enabled and must be shown. Disabled component has only icon with
---- {options.disabled_color}. This method must be overrided.
+--- {options.disabled_color}.
 function Ex:is_enabled()
     if self.options.is_enabled and type(self.options.is_enabled) == 'function' then
         return self.options.is_enabled()
@@ -60,8 +70,8 @@ end
 --- Disable component should have disabled color
 function Ex:__update_colors_if_disabled()
     if self:is_enabled() then
-        -- self.options.color_highlight = nil
-        -- self.options.icon_color_highlight = nil
+        self.options.color_highlight = self.options.__enabled_hl
+        self.options.icon_color_highlight = self.options.__enabled_icon_hl
     else
         self.options.color_highlight = self.options.__disabled_hl
         self.options.icon_color_highlight = self.options.__disabled_hl
