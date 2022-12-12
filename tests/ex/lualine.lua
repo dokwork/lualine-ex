@@ -45,7 +45,6 @@ function M.eq_colors(expected_name, actual_cterm, msg)
 end
 
 ---@class ComponentTable
----@field component_hl string
 ---@field icon_hl string
 ---@field icon_color Color
 ---@field icon string
@@ -59,7 +58,7 @@ function M.match_rendered_component(rendered_component)
     local ptrn_value = '(.*)'
     local t = {}
     -- try to match component with icon
-    t.component_hl, t.icon_hl, t.icon, t.hl, t.value = string.match(
+    _, t.icon_hl, t.icon, t.hl, t.value = string.match(
         rendered_component,
         ptrn_hl .. ptrn_hl .. ptrn_value .. ptrn_hl .. ptrn_value
     )
@@ -67,7 +66,7 @@ function M.match_rendered_component(rendered_component)
         t.icon_color = { fg = M.get_color(t.icon_hl, 'fg#'), bg = M.get_color(t.icon_hl, 'bg#') }
     end
     -- or try to match without icon
-    if not t.component_hl then
+    if not t.icon_hl then
         t.hl, t.value = string.match(rendered_component, ptrn_hl .. ptrn_value)
     end
     assert(t.hl, string.format('String [%s] was not matched', rendered_component))
