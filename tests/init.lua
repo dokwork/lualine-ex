@@ -37,6 +37,7 @@ if packer_bootstrap then
     print('Please, restart nvim to use installed plugins.')
 else
     -- Configuration for tests:
+    vim.o.spell = true
     require('lualine').setup({
         options = {
             theme = 'material',
@@ -49,6 +50,7 @@ else
                 { 'ex.relative_filename', padding = 0 },
             },
             lualine_c = { 'ex.git.branch' },
+            lualine_y = { 'ex.spellcheck' },
         },
     })
 end
