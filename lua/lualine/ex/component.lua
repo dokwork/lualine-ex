@@ -59,7 +59,10 @@ end
 
 --- Disable component should have disabled color
 function Ex:__update_colors_if_disabled()
-    if not self:is_enabled() then
+    if self:is_enabled() then
+        -- self.options.color_highlight = nil
+        -- self.options.icon_color_highlight = nil
+    else
         self.options.color_highlight = self.options.__disabled_hl
         self.options.icon_color_highlight = self.options.__disabled_hl
     end

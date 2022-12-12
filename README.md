@@ -59,6 +59,34 @@ sections = {
 
 ## ExComponent
 
-`ExComponent` is an abstract class, which extends the `lualine.component` to make it possible to
-show an icon even for empty component in 'disabled' state. State of the component depends on result
+The `lualine.ex.component` is an abstract class, which extends the `lualine.component` to make it possible to
+show an icon even for empty component in 'disabled' state. A state of the component depends on the result
 of the `is_enabled` function.
+
+The `is_enabled` function can be passed as component option or overridden for a class extended
+`lualine.ex.component`:
+
+```lua
+-- You can specify default options for every child of your class
+-- passing them to the method `extend`: 
+local Spell = require('lualine.ex.component'):extend({
+    icon = '暈'
+})
+
+function Spell:is_enabled()
+    return vim.wo.spell
+end
+
+function Spell:update_status()
+    if vim.wo.spell then
+        return vim.bo.spelllang
+    else
+        return ''
+    end
+end
+
+return Spell
+```
+
+The difference between cases when `cond = false` and `is_enabled = false` is that in the first case
+component will not be rendered at all, but in the second case only an icon with `disabled_color` will be shown. 
