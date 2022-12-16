@@ -54,10 +54,7 @@ function Ex:create_option_highlights()
     -- set disabled highlights
     self.options.__disabled_hl = self:create_hl(self.options.disabled_color, 'disabled')
     self.options.__disabled_icon_hl = self.options.disabled_icon_color
-            and self:create_hl(
-                self.options.disabled_icon_color,
-                'disabled_icon'
-            )
+            and self:create_hl(self.options.disabled_icon_color, 'disabled_icon')
         or self.options.__disabled_hl
 end
 
