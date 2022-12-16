@@ -3,6 +3,7 @@ local uc = require('lualine.utils.color_utils')
 local ex = require('lualine.ex')
 local eq = assert.are.equal
 local neq = assert.are.not_equal
+local same = assert.are.same
 local t = require('tests.ex.busted'):ignore_all_tests()
 
 describe('A child of the ex.component', function()
@@ -32,7 +33,7 @@ describe('A child of the ex.component', function()
             -- when:
             local icon = Ex(init_opts).options.icon
             -- then:
-            eq({ '!', align = 'right' }, icon)
+            same({ '!', align = 'right' }, icon)
         end)
 
         it('should invoke `post_init` hook with init and default options', function()

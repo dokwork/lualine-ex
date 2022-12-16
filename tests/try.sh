@@ -11,7 +11,7 @@ export XDG_DATA_HOME='/tmp/lualine-ex/data'
 
 ARG=$1
 
-if [ "$ARG" == "--reset" ]; then
+if [ "$ARG" == "--reinit" ]; then
 
   ARG=''
   rm -rf $XDG_DATA_HOME
