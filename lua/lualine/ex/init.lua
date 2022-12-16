@@ -52,9 +52,9 @@ M.deep_merge = function(t1, t2)
 
     for key, value in pairs(t2) do
         if type(value) == 'table' then
-            res[key] = t1[key] and M.deep_merge(t1[key], value) or M.deep_merge(value)
-        else
-            res[key] = t1[key] or value
+            res[key] = t1[key] ~= nil and M.deep_merge(t1[key], value) or M.deep_merge(value)
+        elseif t1[key] == nil then
+            res[key] = value
         end
     end
     return res

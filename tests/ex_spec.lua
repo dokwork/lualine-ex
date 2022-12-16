@@ -34,17 +34,17 @@ end)
 
 describe('deep_merge', function()
     it('should put all absent keys from b to a', function()
-        local a = { a = 'a' }
-        local b = { b = 'b' }
+        local a = { a = false }
+        local b = { b = true }
 
-        same({ c = { a = 'a', b = 'b' } }, ex.deep_merge({ c = a }, { c = b }))
+        same({ c = { a = false, b = true } }, ex.deep_merge({ c = a }, { c = b }))
     end)
 
     it('should not override existed keys', function()
-        local a = { a = 'a' }
-        local b = { a = 'b' }
+        local a = { a = false }
+        local b = { a = true }
 
-        same({ c = { a = 'a' } }, ex.deep_merge({ c = a }, { c = b }))
+        same({ c = { a = false } }, ex.deep_merge({ c = a }, { c = b }))
     end)
 
     it('should copy numbered keys too', function()
