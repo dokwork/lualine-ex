@@ -45,11 +45,11 @@ function M.eq_colors(expected_name, actual_cterm, msg)
 end
 
 ---@class ComponentTable
----@field icon_hl string
----@field icon_color Color
----@field icon string
----@field hl string
----@field color Color
+---@field icon_hl? string
+---@field icon_color? Color
+---@field icon? string
+---@field hl? string
+---@field color? Color
 ---@field value string
 
 ---@return ComponentTable
@@ -69,8 +69,12 @@ function M.match_rendered_component(rendered_component)
     if not t.icon_hl then
         t.hl, t.value = string.match(rendered_component, ptrn_hl .. ptrn_value)
     end
-    assert(t.hl, string.format('String [%s] was not matched', rendered_component))
-    t.color = { fg = M.get_color(t.hl, 'fg#'), bg = M.get_color(t.hl, 'bg#') }
+    if t.hl then
+        t.color = { fg = M.get_color(t.hl, 'fg#'), bg = M.get_color(t.hl, 'bg#') }
+        -- the last option is a component without colors
+    else
+        t.value = rendered_component
+    end
     return t
 end
 
