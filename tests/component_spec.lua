@@ -3,6 +3,7 @@ local uc = require('lualine.utils.color_utils')
 local ex = require('lualine.ex')
 local eq = assert.are.equal
 local neq = assert.are.not_equal
+local t = require('tests.ex.busted'):ignore_all_tests()
 
 describe('A child of the ex.component', function()
     it('should have the passed default options as a property', function()
@@ -24,9 +25,19 @@ describe('A child of the ex.component', function()
     end)
 
     describe('on initialization', function()
+        t.except_it('should merge init options with defaults', function()
+            -- given:
+            local Ex = require('lualine.ex.component'):extend({ icon = { '!' } })
+            local init_opts = u.opts({ icon = { align = 'right' } })
+            -- when:
+            local icon = Ex(init_opts).options.icon
+            -- then:
+            eq({ '!', align = 'right' }, icon)
+        end)
+
         it('should invoke `post_init` hook with init and default options', function()
             -- given:
-            local def_opts = {}
+            local def_opts = { test = 'test' }
             local Ex = require('lualine.ex.component'):extend(def_opts)
             local init_opts = u.opts()
             local passed_opts

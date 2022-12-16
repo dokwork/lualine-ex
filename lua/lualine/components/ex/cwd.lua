@@ -1,8 +1,13 @@
----@class CwdComponent: LualineComponent
----
----Options:
---- * `depth: number` a count of the last directories in the working path. Default is 2.
-local Cwd = require('lualine.component'):extend()
+---@class CwdComponentOptions: ExComponentOptions
+---@field depth number A count of the last directories in the working path. Default is 2.
+---@field prefix string
+
+---@class CwdComponent: ExComponent
+---@field options CwdComponentOptions
+local Cwd = require('lualine.ex.component'):extend({
+    depth = 2,
+    prefix = '…',
+})
 
 ---Cuts the current working path and gets the `options.depth` directories from the end
 ---with prefix ".../". For example: inside the path `/3/2/1` this provider will return
@@ -10,10 +15,10 @@ local Cwd = require('lualine.component'):extend()
 ---the path, then path will be returned as is.
 function Cwd:update_status()
     local full_path = vim.fn.getcwd()
-    local count = self.options.depth or 2
+    local count = self.options.depth
     local sep = '/' -- FIXME: use system separator
     local dirs = vim.split(full_path, sep, { plain = true, trimempty = true })
-    local result = '...' .. sep
+    local result = self.options.prefix .. sep
     if count > #dirs then
         return full_path
     end

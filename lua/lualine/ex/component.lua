@@ -78,7 +78,7 @@ function Ex:__update_colors_if_disabled()
     end
 end
 
----Overrided method to draw this component.
+---Overridden method to draw this component.
 function Ex:draw(default_highlight, is_focused)
     self.status = ''
     self.applied_separator = ''
