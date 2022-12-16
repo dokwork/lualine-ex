@@ -6,11 +6,10 @@ local Git = require('lualine.ex.git_provider')
 
 ---@class GitBranchOptions: ExComponentOptions
 ---@field icon Icon
----@field async boolean
+---@field sync boolean
 ---@field colors GitBranchColors
 local default_options = {
-    icon = ' ',
-    async = true,
+    icon = { ' ' },
     colors = {
         changed = { fg = 'orange' },
         commited = { fg = 'green' },
@@ -39,7 +38,7 @@ function GitBranch:pre_init(options)
     end
     options.color = function()
         local is_worktree_changed = self.git
-            and self.git():is_worktree_changed(not self.options.async)
+            and self.git():is_worktree_changed(self.options.sync)
         -- do not change color for unknown state
         if is_worktree_changed == nil then
             return options.disabled_color
