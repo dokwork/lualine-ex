@@ -38,18 +38,24 @@ sections = {
   lualine_a = {
     {
       'ex.git.branch',
+
       icon = ' ',
+
       -- `git status` command is used to check the status of the worktree.
       -- By default, it's run in background for performance purpose, but it could lead to
-      -- wrong 'unknow' status at first time.
-      async = true, 
+      -- wrong 'unknow' status at first time. `sync = true` can prevent it, but it degrades 
+      -- startup time 
+      sync = false, 
+
       -- colors for possible states
       colors = {
           changed = { fg = 'orange' },
           commited = { fg = 'green' },
       },
+
       -- color for disabled component
       disabled_color = { fg = 'grey' }
+
       -- `true` means that icon must be shown even in case when no git repository
       always_show_icon = true
     }

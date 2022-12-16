@@ -3,15 +3,12 @@ local log = require('plenary.log').new({
     use_file = false,
     use_console = 'sync',
 })
-local b = require('tests.ex.busted') --:ignore_all_tests()
+local t = require('tests.ex.busted') --:ignore_all_tests()
 local l = require('tests.ex.lualine')
 local fs = require('tests.ex.fs')
 local git = require('tests.ex.git')
 
 local eq = assert.are.equal
-local function trim(str)
-    return string.match(str, '%s*(%S+)%s*')
-end
 
 local component_name = 'ex.git.branch'
 
@@ -73,9 +70,9 @@ describe('ex.git.branch component', function()
             eq('  main', ctbl.value, 'Wrong value from: ' .. rendered_component)
         end)
 
-        it('rendered component should have "commited" color', function()
-            local commited_color = { fg = 'green' }
-            local opts = l.opts({ colors = { commited = commited_color }, async = false })
+        it('rendered component should have "committed" color', function()
+            local commited_color = { fg = 'blue' }
+            local opts = l.opts({ colors = { commited = commited_color }, sync = true })
             local rendered_component = l.render_component(component_name, opts)
             local ctbl = l.match_rendered_component(rendered_component)
             l.eq_colors(

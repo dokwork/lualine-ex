@@ -3,6 +3,8 @@ local uc = require('lualine.utils.color_utils')
 local ex = require('lualine.ex')
 local eq = assert.are.equal
 local neq = assert.are.not_equal
+local same = assert.are.same
+local t = require('tests.ex.busted') --:ignore_all_tests()
 
 describe('A child of the ex.component', function()
     it('should have the passed default options as a property', function()
@@ -24,9 +26,19 @@ describe('A child of the ex.component', function()
     end)
 
     describe('on initialization', function()
+        it('should merge init options with defaults', function()
+            -- given:
+            local Ex = require('lualine.ex.component'):extend({ icon = { '!' } })
+            local init_opts = u.opts({ icon = { align = 'right' } })
+            -- when:
+            local icon = Ex(init_opts).options.icon
+            -- then:
+            same({ '!', align = 'right' }, icon)
+        end)
+
         it('should invoke `post_init` hook with init and default options', function()
             -- given:
-            local def_opts = {}
+            local def_opts = { test = 'test' }
             local Ex = require('lualine.ex.component'):extend(def_opts)
             local init_opts = u.opts()
             local passed_opts
@@ -37,7 +49,7 @@ describe('A child of the ex.component', function()
             Ex(init_opts)
             -- then:
             for key, orig in pairs(ex.merge(init_opts, def_opts)) do
-                eq(orig, passed_opts[key])
+                same(orig, passed_opts[key])
             end
         end)
     end)
@@ -121,7 +133,11 @@ describe('A child of the ex.component', function()
             local expected_fg = tonumber(
                 uc.rgb2cterm(uc.color_name2rgb(Child.default_options.disabled_color.fg))
             )
-            eq(expected_fg, tonumber(ctbl.color.fg))
+            eq(
+                expected_fg,
+                ctbl.color and tonumber(ctbl.color.fg),
+                'Unexpected rendered component: ' .. rendered_component
+            )
         end)
 
         it('should return back the hl, when component become enabled again', function()
