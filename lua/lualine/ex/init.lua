@@ -23,15 +23,41 @@ M.is_empty = function(x)
 end
 
 ---@type fun(t1: table, t2: table): table
----The same as `vim.tbl_extend('keep', t1 or {}, t2 or {})`
+---The same as `vim.tbl_extend('keep', t1 or {}, t2 or {})`,
 M.merge = function(t1, t2)
     return vim.tbl_extend('keep', t1 or {}, t2 or {})
 end
 
 ---@type fun(t1: table, t2: table): table
 ---The same as `vim.tbl_deep_extend('keep', t1 or {}, t2 or {})`
+---but can work with mixed tables (with numbered and string keys).
+---If passed only the first argument, this method works as deep copy,
+---and returns copy of the argument.
+---If one of the arguments is not a table, the first argument will be returned.
 M.deep_merge = function(t1, t2)
-    return vim.tbl_deep_extend('keep', t1 or {}, t2 or {})
+    t1 = t1 or {}
+    t2 = t2 or {}
+
+    if type(t1) ~= 'table' then
+        return t1
+    end
+    local res = {}
+    for key, value in pairs(t1) do
+        res[key] = type(value) == 'table' and M.deep_merge(value) or value
+    end
+
+    if type(t2) ~= 'table' then
+        return t1
+    end
+
+    for key, value in pairs(t2) do
+        if type(value) == 'table' then
+            res[key] = t1[key] and M.deep_merge(t1[key], value) or M.deep_merge(value)
+        else
+            res[key] = t1[key] or value
+        end
+    end
+    return res
 end
 
 return M
