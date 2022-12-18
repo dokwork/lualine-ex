@@ -23,6 +23,38 @@ use {
 
 ## Components
 
+### ex.lsp
+
+This component provides an information about run LSP servers. Every server has its own color and icon.
+When some of already run server is not active for the current buffer, it has a special `inactive_color`.
+To specify inactive color you can follow the rules of describing colors from the `lualine`. It can
+be the name of the color, #RGB, or a table.
+
+An icon for every server is taken from the `icons` table or `nvim-wev-devicons` plugin (if it's installed). 
+If no one icon was found for some server neither in `icons`, nor in `nvim-wev-devicons`, the `unknown` icon 
+will be used. For the case, when no one server is run, the component is in disabled state.
+
+```lua
+sections = {
+  lualine_a = {
+    {
+      'ex.lsp',
+
+      -- The color for a server in inactive state:
+      inactive_color = { fg = 'grey' },
+
+      icons = {
+        -- Default icon for any unknow server:
+        unknown = '?', 
+
+        -- The special icon for case, when no one server is run:
+        lsp_off = 'ﮤ'
+      }
+    }
+  }
+}
+```
+
 ### ex.git.branch
 
 This component provides a name of the git branch for the current working directory.

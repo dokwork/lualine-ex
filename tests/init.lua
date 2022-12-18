@@ -50,7 +50,10 @@ else
                 { 'ex.relative_filename', padding = 0 },
             },
             lualine_c = { 'ex.git.branch' },
-            lualine_y = { 'ex.spellcheck' },
+            lualine_y = {
+                { 'ex.lsp', interactive_color = { fg = 'red' } },
+                'ex.spellcheck',
+            },
         },
     })
 end
