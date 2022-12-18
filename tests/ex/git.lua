@@ -20,12 +20,20 @@ function Git.init(git_root, branch)
     git(git_root, 'init', '-b', branch)
 end
 
+function Git.checkout(git_root, branch_name)
+    git(git_root, 'checkout', branch_name)
+end
+
 function Git.add(git_root, file)
     git(git_root, 'add', file)
 end
 
 function Git.commit(git_root, message)
     git(git_root, 'commit', '-m', '"' .. message .. '"')
+end
+
+function Git.new_branch(git_root, branch_name)
+    git(git_root, 'checkout', '-b', branch_name)
 end
 
 return Git
