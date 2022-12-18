@@ -60,14 +60,25 @@ describe('ex.git.branch component', function()
         end)
 
         it('should has status with a name of the current branch', function()
+            git.checkout(git_root, 'main')
             local c = l.init_component(component_name)
             eq('main', c:update_status())
         end)
 
-        it('rendered component should have a branch name and icon', function()
+        it('a rendered component should have the branch name and the icon', function()
+            git.checkout(git_root, 'main')
             local rendered_component = l.render_component(component_name)
             local ctbl = l.match_rendered_component(rendered_component)
             eq('  main', ctbl.value, 'Wrong value from: ' .. rendered_component)
+        end)
+
+        it('should show the name of the new branch', function()
+            git.checkout(git_root, 'main')
+            local c = l.init_component(component_name)
+            eq('main', c:update_status())
+
+            git.new_branch(git_root, 'new_branch')
+            eq('new_branch', c:update_status())
         end)
 
         it('rendered component should have "committed" color', function()
