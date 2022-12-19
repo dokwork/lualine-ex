@@ -47,4 +47,14 @@ function M.write(file, text)
     return true
 end
 
+function M.read(file)
+    local f, err = io.open(file, 'r')
+    if not f then
+        return nil, err
+    end
+    local content = f:read('*a')
+    f:close()
+    return content
+end
+
 return M

@@ -6,8 +6,9 @@
 # got to the directory with this script (./test/):
 cd $(dirname ${BASH_SOURCE[0]})
 
-export XDG_CONFIG_HOME='/tmp/lualine-ex/conf'
-export XDG_DATA_HOME='/tmp/lualine-ex/data'
+${TMPDIR:='/tmp'}
+export XDG_CONFIG_HOME=$TMPDIR'/lualine-ex/conf'
+export XDG_DATA_HOME=$TMPDIR'/lualine-ex/data'
 
 ARG=$1
 

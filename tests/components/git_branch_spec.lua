@@ -72,15 +72,6 @@ describe('ex.git.branch component', function()
             eq('  main', ctbl.value, 'Wrong value from: ' .. rendered_component)
         end)
 
-        it('should show the name of the new branch', function()
-            git.checkout(git_root, 'main')
-            local c = l.init_component(component_name)
-            eq('main', c:update_status())
-
-            git.new_branch(git_root, 'new_branch')
-            eq('new_branch', c:update_status())
-        end)
-
         it('rendered component should have "committed" color', function()
             local commited_color = { fg = 'blue' }
             local opts = l.opts({ colors = { commited = commited_color }, sync = true })

@@ -5,13 +5,13 @@ local uv = vim.loop
 local Job = require('plenary.job')
 local log = require('plenary.log').new({
     plugin = 'ex.git_provider',
-    use_file = false,
-    use_console = 'sync',
+    use_console = vim.env.PLENARY_USE_CONSOLE or 'async',
 })
 
-local function path(...)
+local sep = package.config:sub(1, 1)
+local function make_path(...)
     local args = { ... }
-    return vim.fn.join(args, '/')
+    return vim.fn.join(args, sep)
 end
 
 ---Reads the whole file and returns its content.
@@ -36,7 +36,7 @@ local Git = require('lualine.utils.class'):extend()
 ---@return string # The path to the root of the git workspace, or nil.
 function Git.find_git_root(path)
     local function is_git_dir(path)
-        local dir = path .. '/.git'
+        local dir = make_path(path, '.git')
         return fn.isdirectory(dir) == 1
     end
 
@@ -55,20 +55,29 @@ end
 ---@type fun(git_root_path: string)
 ---@param git_root_path string Path to the root of the git worktree.
 function Git:init(git_root_path)
+    -- the path must be real
     local p, err = uv.fs_realpath(git_root_path)
     if p then
-        local _, err = uv.fs_realpath(path(p, '.git'))
+        -- the path must be the git root
+        local _, err = uv.fs_realpath(make_path(p, '.git'))
         p = (not err and p) or nil
     end
     self.__git_root = p
     self.__git_root_err = err
+    if p then
+        log.fmt_debug('Provider for %s has been created.', p)
+    elseif err then
+        log.fmt_error('Error on creating provider: %s', err)
+    end
 end
 
 ---Reads '{git_root}/.git/HEAD' file and gets the name of the current git branch, or the first 7
 ---symbols of the commit sha.
 ---@return string # The name of the current branch or first 7 symbols of the commit's hash.
 function Git:__read_git_branch()
-    local head = read(path(self:git_root(), '.git', 'HEAD'))
+    local path = make_path(self:git_root(), '.git', 'HEAD')
+    local head = read(path)
+    log.fmt_debug('Read a name of the git branch. Content of the %s:\n%s', path, head)
     local branch = head
         and (
             string.match(head, 'ref: refs/heads/(%w+)')
@@ -84,31 +93,48 @@ function Git:git_root()
 end
 
 function Git:get_branch()
-    -- git branch already known
-    if self.__git_branch then
-        return self.__git_branch
-    end
-
     -- git root was not found
     if not self.__git_root then
         return nil
     end
 
-    -- read current branch
+    -- git branch already known
+    if self.__git_branch then
+        return self.__git_branch
+    end
+
+    -- read the name of the current branch
     self.__git_branch = self:__read_git_branch()
 
     -- run poll of HEAD's changes
-    self.__poll_head = uv.new_fs_event()
-    uv.fs_event_start(self.__poll_head, path(self:git_root(), '.git', 'HEAD'), {}, function()
-        self.__git_branch = self.__read_git_branch()
-    end)
+    self:__poll_head(make_path(self:git_root(), '.git', 'HEAD'))
 
     return self.__git_branch
 end
 
----Runs `git status` to ckeck the current status of the worktree.
+function Git:__poll_head(path)
+    local is_windows = sep == [[\]]
+    self.__poll_event = self.__poll_event or (is_windows and uv.new_fs_poll() or uv.new_fs_event())
+    log.fmt_debug('Start %s for %s', is_windows and 'fs_poll' or 'fs_event', path)
+    self.__poll_event:start(
+        path,
+        is_windows and 1000 or {},
+        vim.schedule_wrap(function(err, filename, event)
+            if err then
+                log.fmt_warn('Error happened on polling %s: %s', filename, err)
+            else
+                log.fmt_debug('New update for %s: %s', filename, event)
+                self.__git_branch = self:__read_git_branch()
+            end
+            self.__poll_event:stop()
+            self:__poll_head(path)
+        end)
+    )
+end
+
+---Runs `git status` to check the current status of the worktree.
 ---@param is_sync boolean If true, `git status` will be run in background and this method could return
----     not actual result, which eventially become correct.
+---     not actual result, which eventually become correct.
 ---@return boolean | nil # The status of the worktree. In async mode can return nil at first time.
 ---   If `git_root` is absent, then nil will be returned.
 function Git:is_worktree_changed(is_sync)
