@@ -6,7 +6,7 @@ local log = require('plenary.log').new({
 local t = require('tests.ex.busted') --:ignore_all_tests()
 local l = require('tests.ex.lualine')
 local fs = require('tests.ex.fs')
-local git = require('tests.ex.git')
+local Git = require('tests.ex.git')
 
 local eq = assert.are.equal
 
@@ -42,10 +42,12 @@ describe('ex.git.branch component', function()
 
     describe('inside the git worktree', function()
         local git_root
+        local git
 
         before_each(function()
             git_root = fs.mktmpdir()
-            git.init(git_root)
+            git = Git(git_root)
+            git:init('main')
             vim.cmd('cd ' .. git_root)
             log.debug('Working directory for test is: ' .. vim.fn.getcwd())
         end)
@@ -60,13 +62,13 @@ describe('ex.git.branch component', function()
         end)
 
         it('should has status with a name of the current branch', function()
-            git.checkout(git_root, 'main')
+            git:checkout('main')
             local c = l.init_component(component_name)
             eq('main', c:update_status())
         end)
 
         it('a rendered component should have the branch name and the icon', function()
-            git.checkout(git_root, 'main')
+            git:checkout('main')
             local rendered_component = l.render_component(component_name)
             local ctbl = l.match_rendered_component(rendered_component)
             eq('  main', ctbl.value, 'Wrong value from: ' .. rendered_component)

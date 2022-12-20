@@ -1,6 +1,6 @@
 local t = require('tests.ex.busted')
 local fs = require('tests.ex.fs')
-local git = require('tests.ex.git')
+local Git = require('tests.ex.git')
 
 local eq = assert.are.equal
 
@@ -34,26 +34,25 @@ end)
 
 describe('inside a git worktree', function()
     local git_root
+    local git
 
     before_each(function()
         git_root = fs.mktmpdir()
-        git.init(git_root)
+        git = Git(git_root)
+        git:init('main')
     end)
 
     after_each(function()
         fs.remove(git_root)
     end)
 
-    it('find_git_root should return git_root path when git_root passed', function()
+    it('find_git_root should return path to git root directory passed as the argument', function()
         eq(git_root, GitProvider.find_git_root(git_root))
     end)
 
-    it(
-        'find_git_root should return git_root path when directory inside the git worktree passed',
-        function()
-            eq(git_root, GitProvider.find_git_root(fs.mkdir(fs.path(git_root, 'test'))))
-        end
-    )
+    it('find_git_root should return parent path to git root', function()
+        eq(git_root, GitProvider.find_git_root(fs.mkdir(fs.path(git_root, 'test'))))
+    end)
 
     it('git_root should return path passed to the constructor', function()
         local p = GitProvider:new(git_root)
@@ -70,7 +69,7 @@ describe('inside a git worktree', function()
         local p = GitProvider:new(git_root)
         eq('main', p:get_branch())
         -- when:
-        git.new_branch(git_root, 'new_branch')
+        git:new_branch('new_branch')
         -- then:
         local head = fs.path(git_root, '.git', 'HEAD')
         t.eventually(function()
@@ -99,7 +98,7 @@ describe('inside a git worktree', function()
         it('should return true when a new file was created and add to the index', function()
             local file = fs.path(git_root, 'test.txt')
             fs.touch(file)
-            git.add(git_root, file)
+            git:add(file)
 
             local p = GitProvider:new(git_root)
             eq(true, p:is_worktree_changed(true))
@@ -108,8 +107,8 @@ describe('inside a git worktree', function()
         it('should return false right after commit all changes', function()
             local file = fs.path(git_root, 'test.txt')
             fs.touch(file)
-            git.add(git_root, file)
-            git.commit(git_root, 'add file')
+            git:add(file)
+            git:commit('add file')
 
             local p = GitProvider:new(git_root)
             eq(false, p:is_worktree_changed(true))
@@ -118,8 +117,8 @@ describe('inside a git worktree', function()
         it('should return true when an indexed file was changed', function()
             local file = fs.path(git_root, 'test.txt')
             fs.touch(file)
-            git.add(git_root, file)
-            git.commit(git_root, 'add file')
+            git:add(file)
+            git:commit('add file')
             fs.write(file, 'test')
 
             local p = GitProvider:new(git_root)
@@ -129,8 +128,8 @@ describe('inside a git worktree', function()
         it('should return true when a file was removed', function()
             local file = fs.path(git_root, 'test.txt')
             fs.touch(file)
-            git.add(git_root, file)
-            git.commit(git_root, 'add file')
+            git:add(file)
+            git:commit('add file')
             fs.remove(file)
 
             local p = GitProvider:new(git_root)
