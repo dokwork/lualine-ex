@@ -16,7 +16,7 @@ local Cwd = require('lualine.ex.component'):extend({
 function Cwd:update_status()
     local full_path = vim.fn.getcwd()
     local count = self.options.depth
-    local sep = '/' -- FIXME: use system separator
+    local sep = package.config:sub(1, 1)
     local dirs = vim.split(full_path, sep, { plain = true, trimempty = true })
     local result = self.options.prefix .. sep
     if count > #dirs then
