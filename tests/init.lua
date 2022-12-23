@@ -30,14 +30,28 @@ require('packer').startup(function(use)
             { 'nvim-lua/plenary.nvim' },
         },
     })
+    -- used for testing ex.lsp component
+    use({ 'jose-elias-alvarez/null-ls.nvim' })
 end)
 
 if packer_bootstrap then
     require('packer').sync()
     print('Please, restart nvim to use installed plugins.')
 else
-    -- Configuration for tests:
+    -- Configuration for tests: --
+
+    -- used for testing ex.spellcheck component
     vim.o.spell = true
+
+    -- used for testing ex.lsp component
+    local null_ls = require('null-ls')
+    null_ls.setup({
+        sources = {
+            null_ls.builtins.formatting.stylua,
+        },
+    })
+
+    -- setup statusline with ex components
     require('lualine').setup({
         options = {
             theme = 'material',
