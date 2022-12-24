@@ -30,7 +30,7 @@ end
 
 ---@type fun(t1: table, t2: table): table
 ---The same as `vim.tbl_deep_extend('keep', t1 or {}, t2 or {})`
----but can work with mixed tables (with numbered and string keys).
+---but can work with mixed tables (with numeric and string keys).
 ---If passed only the first argument, this method works as deep copy,
 ---and returns copy of the argument.
 ---If one of the arguments is not a table, the first argument will be returned.

@@ -31,19 +31,20 @@ end
 
 function Ex:init(options)
     options = ex.deep_merge(options, self.default_options)
-    self:pre_init(options)
+    self.options = options
+    self:pre_init()
     Ex.super.init(self, options)
-    self:post_init(options)
+    self:post_init()
 end
 
 ---Initialization hook. Runs before {Ex.super.init}.
 ---@param options table The {ExComponentOptions} merged with {default_options}.
 ---@return table # Optionally patched options.
-function Ex:pre_init(options) end
+function Ex:pre_init() end
 
 ---Initialization hook. Runs right after {Ex.super.init}.
 ---@param options table The {ExComponentOptions} merged with {default_options}.
-function Ex:post_init(options) end
+function Ex:post_init() end
 
 ---creates hl group from color option
 function Ex:create_option_highlights()
