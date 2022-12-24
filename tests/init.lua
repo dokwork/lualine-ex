@@ -31,7 +31,7 @@ require('packer').startup(function(use)
         },
     })
     -- used for testing ex.lsp component
-    use({ 'jose-elias-alvarez/null-ls.nvim' })
+    use({ 'jose-elias-alvarez/null-ls.nvim', requires = { 'neovim/nvim-lspconfig' } })
 end)
 
 if packer_bootstrap then
@@ -65,7 +65,7 @@ else
             },
             lualine_c = { 'ex.git.branch' },
             lualine_y = {
-                { 'ex.lsp', interactive_color = { fg = 'red' } },
+                { 'ex.lsp', icons = { ['null-ls'] = { 'N', color = 'magenta' } } },
                 'ex.spellcheck',
             },
         },

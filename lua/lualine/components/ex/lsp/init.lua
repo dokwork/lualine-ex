@@ -1,8 +1,8 @@
-local h = require('lualine.highlight')
 local ex = require('lualine.ex')
+local log = require('plenary.log').new({ plugin = 'ex.lsp' })
 local SingleLsp = require('lualine.components.ex.lsp.single_lsp')
 
--- try to get icons from the 'nvim-web-devicons' module
+-- tries to get icons from the 'nvim-web-devicons' module
 local function dev_icons()
     local ok, devicons = pcall(require, 'nvim-web-devicons')
     return ok and devicons.get_icons() or {}
@@ -11,96 +11,68 @@ end
 ---@alias LspIcon string | LualineIcon | DevIcon
 
 ---@class LspIcons A table with icons for lsp clients. Keys are names of the lsp servers.
----@field unknown string LspIcon an icon for unknown lsp client.
----@field lsp_off string a symbol to illustrate that all clients are off.
+---@field unknown LspIcon  An icon for unknown lsp client.
+---@field lsp_off string   A symbol to illustrate that all clients are off.
 
----@alias LspComponentOptions LualineComponentOptions | LspOptions
+---@class LspOptions: ExComponentOptions
+---@field icons LspIcons
+---@field icons_only boolean
+---@field only_attached boolean
+
+---@alias LspComponentOptions ExComponentOptions | LspOptions
 
 ---@class LspComponent: LualineComponent
 ---@field options LspComponentOptions
-local LspComponent = require('lualine.component'):extend()
+local LspComponent = require('lualine.ex.component'):extend({
+    component_name = 'ex_lsp',
+    icons = ex.merge({
+        unknown = '?',
+        lsp_off = 'ﮤ',
+    }, dev_icons()),
+})
 
----@class LspOptions
----@field icons LspIcons
----@field inactive_color Color
----@field inactive_color_highlight LualineHighlight
----@field icons_only boolean
----@field only_attached boolean
-LspComponent.default_options = {
-    icons = ex.merge({ unknown = '?', lsp_off = 'ﮤ' }, dev_icons()),
-    inactive_color = 'grey',
-    inner_padding = 0,
-}
-
-function LspComponent:init(options)
-    LspComponent.super.init(self, options)
-    self.options = ex.deep_merge(self.options, self.default_options)
-    self:setup()
+function LspComponent:post_init()
+    self.__components = {}
 end
 
-function LspComponent:setup()
-    self.components = {}
-    local inactive_hl = h.get_lualine_hl('lualine_' .. self.options.self.section .. '_inactive')
-        or {}
-    if self.options.inactive_color then
-        inactive_hl.fg = self.options.inactive_color
-    end
-    self.options.inactive_color_highlight = self:create_hl(inactive_hl, 'inactive_component')
+function LspComponent:is_enabled()
+    return not ex.is_empty(self:__clients())
 end
 
-function LspComponent:render(default_highlight, is_focused)
-    -- by default, if no one lsp client exists, this component must be inactive
-    local status = '%#' .. self.options.inactive_color_highlight.name .. '#'
-
-    local clients
-    if self.options.only_attached then
-        clients = vim.lsp.get_active_clients({ bufnum = 0 })
+function LspComponent:__clients()
+    if self.options.only_attached == true then
+        return vim.lsp.get_active_clients({ bufnum = 0 })
     else
-        clients = vim.lsp.get_active_clients()
+        return vim.lsp.get_active_clients()
     end
+end
 
-    if ex.is_empty(clients) then
-        status = status .. self.options.icons.lsp_off
-    else
-        for _, client in pairs(clients) do
-            local component_id = { id = client.id, name = client.name }
-            local lsp = self.components[component_id]
+function LspComponent:update_status(is_focused)
+    local status = ''
+    if self:is_enabled() then
+        self.options.icon = nil
+        for _, client in pairs(self:__clients()) do
+            local lsp = self.__components[client.id]
             if not lsp then
                 lsp = SingleLsp:new({
                     client = client,
                     self = self.options.self,
                     icons = self.options.icons,
                     icons_enabled = self.options.icons_enabled,
-                    color = self.options.color,
-                    inactive_color_highlight = self.options.inactive_color_highlight,
-                    default_highlight_group = string.sub(
-                        default_highlight,
-                        3,
-                        #default_highlight - 1
-                    ),
+                    always_show_icon = self.options.always_show_icon,
                     icons_only = self.options.icons_only,
-                    padding = self.options.inner_padding,
+                    disabled_color = self.options.disabled_color,
+                    disabled_icon_color = self.options.disabled_icon_color,
+                    padding = self.options.icons_only and 0 or 1,
                 })
-                self.components[component_id] = lsp
+                self.__components[client.id] = lsp
             end
-            status = status .. lsp:draw(default_highlight, is_focused)
+            status = status .. lsp:draw(self.default_hl, is_focused)
         end
+    else
+        self.options.icon = self.options.icons.lsp_off
     end
     return status
-end
-
-function LspComponent:draw(default_highlight, is_focused)
-    if self.options.cond ~= nil and self.options.cond() ~= true then
-        return ''
-    end
-    self.applied_separator = ''
-    self.status = self:render(default_highlight, is_focused)
-    self:apply_padding()
-    self:apply_on_click()
-    self:apply_highlights(default_highlight)
-    self:apply_section_separators()
-    self:apply_separator()
-    return self.status
 end
 
 return LspComponent
