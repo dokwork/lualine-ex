@@ -42,8 +42,8 @@ describe('A child of the ex.component', function()
             local Ex = require('lualine.ex.component'):extend(def_opts)
             local init_opts = u.opts()
             local passed_opts
-            function Ex:post_init(opts)
-                passed_opts = opts
+            function Ex:post_init()
+                passed_opts = self.options
             end
             -- when:
             Ex(init_opts)

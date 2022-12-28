@@ -53,27 +53,43 @@ end
 ---@field value string
 
 ---@return ComponentTable
-function M.match_rendered_component(rendered_component)
+function M.match_rendered_component(rendered_component, opts)
+    local is_right_icon = opts.icon and opts.icon.align == 'right'
     local ptrn_hl = '%%#([%w_]+)#'
     local ptrn_value = '(.*)'
     local t = {}
-    -- try to match component with icon
-    _, t.icon_hl, t.icon, t.hl, t.value = string.match(
-        rendered_component,
-        ptrn_hl .. ptrn_hl .. ptrn_value .. ptrn_hl .. ptrn_value
-    )
+    -- try to match component with a special color for the icon
+    if is_right_icon then
+        t.hl, t.value, t.icon_hl, t.icon = string.match(
+            rendered_component,
+            ptrn_hl .. ptrn_hl .. ptrn_value .. ptrn_hl .. ptrn_value
+        )
+    else
+        _, t.icon_hl, t.icon, t.hl, t.value = string.match(
+            rendered_component,
+            ptrn_hl .. ptrn_hl .. ptrn_value .. ptrn_hl .. ptrn_value
+        )
+    end
     if t.icon_hl then
         t.icon_color = { fg = M.get_color(t.icon_hl, 'fg#'), bg = M.get_color(t.icon_hl, 'bg#') }
     end
-    -- or try to match without icon
+    -- or try to match a component with one color
     if not t.icon_hl then
         t.hl, t.value = string.match(rendered_component, ptrn_hl .. ptrn_value)
     end
     if t.hl then
         t.color = { fg = M.get_color(t.hl, 'fg#'), bg = M.get_color(t.hl, 'bg#') }
-        -- the last option is a component without colors
     else
+        -- the last option is a component without colors
         t.value = rendered_component
+    end
+    -- now, we can try to separate the icon and the value
+    if not t.icon then
+        if is_right_icon then
+            t.value, t.icon = string.match(t.value, '(.*) (.+)') or t.value, nil
+        else
+            t.icon, t.value = string.match(t.value, '(.+) (.*)') or nil, t.value
+        end
     end
     return t
 end
