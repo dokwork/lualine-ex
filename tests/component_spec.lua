@@ -4,6 +4,7 @@ local ex = require('lualine.ex')
 local eq = assert.are.equal
 local neq = assert.are.not_equal
 local same = assert.are.same
+local l = require('tests.ex.lualine')
 local t = require('tests.ex.busted') --:ignore_all_tests()
 
 describe('A child of the ex.component', function()
@@ -130,13 +131,11 @@ describe('A child of the ex.component', function()
             local ctbl = u.match_rendered_component(rendered_component)
 
             -- then:
-            local expected_fg = tonumber(
-                uc.rgb2cterm(uc.color_name2rgb(Child.default_options.disabled_color.fg))
-            )
-            eq(
+            local expected_fg = uc.color_name2rgb(Child.default_options.disabled_color.fg)
+            l.eq_colors(
                 expected_fg,
-                ctbl.color and tonumber(ctbl.color.fg),
-                'Unexpected rendered component: ' .. rendered_component
+                ctbl.color.fg,
+                'Wrong color in the rendered component: ' .. rendered_component
             )
         end)
 
@@ -155,11 +154,11 @@ describe('A child of the ex.component', function()
             local cmp = Child(u.opts())
 
             -- when:
-            local ctbl_before = u.extract_component(cmp)
+            local ctbl_before = u.match_component(cmp)
             is_enabled = false
-            local ctbl_disabled = u.extract_component(cmp)
+            local ctbl_disabled = u.match_component(cmp)
             is_enabled = true
-            local ctbl_after = u.extract_component(cmp)
+            local ctbl_after = u.match_component(cmp)
 
             -- then:
             eq(ctbl_before.hl, ctbl_after.hl)
