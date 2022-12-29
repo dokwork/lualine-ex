@@ -5,10 +5,10 @@ local ex = require('lualine.ex')
 ---@field disabled_color Color
 ---@field disabled_icon_color Color
 ---@field is_enabled boolean | fun(): boolean
----@field __enabled_hl LualineHighlight
----@field __enabled_icon_hl LualineHighlight
----@field __disabled_hl LualineHighlight
----@field __disabled_icon_hl LualineHighlight
+---@field __enabled_hl HighlightToken
+---@field __enabled_icon_hl HighlightToken
+---@field __disabled_hl HighlightToken
+---@field __disabled_icon_hl HighlightToken
 
 ---@class ExComponent: LualineComponent The extension of the {LualineComponent}
 --- which provide ability to mark the component as disabled and use a custom icon

@@ -32,7 +32,7 @@ end
 ---The same as `vim.tbl_deep_extend('keep', t1 or {}, t2 or {})`
 ---but can work with mixed tables (with numeric and string keys).
 ---If passed only the first argument, this method works as deep copy,
----and returns copy of the argument.
+---and returns a copy of the argument.
 ---If one of the arguments is not a table, the first argument will be returned.
 M.deep_merge = function(t1, t2)
     t1 = t1 or {}

@@ -34,14 +34,16 @@ function M.init_component(component_name, opts)
     return require('lualine.components.' .. component_name)(opts)
 end
 
-function M.get_color(group, attr)
-    return vim.fn.synIDattr(vim.fn.synIDtrans(vim.fn.hlID(group)), attr)
+function M.get_gui_color(group, attr)
+    return vim.fn.synIDattr(vim.fn.synIDtrans(vim.fn.hlID(group)), attr, 'gui')
 end
 
-function M.eq_colors(expected_name, actual_cterm, msg)
-    local expected = tonumber(uc.rgb2cterm(uc.color_name2rgb(expected_name)))
-    local actual = tonumber(actual_cterm)
-    assert.are.equal(expected, actual, msg)
+--- Compares two colors. The first color can be presented as a name or #rrggbb. The second
+--- color must be in #rrggbb format.
+function M.eq_colors(expected_color, actual_rgb, msg)
+    local expected_rgb = expected_color:find('#') and expected_color
+        or uc.color_name2rgb(expected_color)
+    assert.are.equal(expected_rgb, actual_rgb, msg)
 end
 
 ---@class ComponentTable
@@ -54,42 +56,49 @@ end
 
 ---@return ComponentTable
 function M.match_rendered_component(rendered_component, opts)
-    local is_right_icon = opts.icon and opts.icon.align == 'right'
-    local ptrn_hl = '%%#([%w_]+)#'
-    local ptrn_value = '(.*)'
+    local is_right_icon = opts and opts.icon and opts.icon.align == 'right'
+    local p_hl = '%%#([%w_]+)#'
+    local p_value = '(.*)'
+    local p_padding = '%s*'
     local t = {}
     -- try to match component with a special color for the icon
     if is_right_icon then
         t.hl, t.value, t.icon_hl, t.icon = string.match(
             rendered_component,
-            ptrn_hl .. ptrn_hl .. ptrn_value .. ptrn_hl .. ptrn_value
+            p_hl .. p_hl .. p_value .. p_hl .. p_padding .. p_value .. p_padding
         )
     else
         _, t.icon_hl, t.icon, t.hl, t.value = string.match(
             rendered_component,
-            ptrn_hl .. ptrn_hl .. ptrn_value .. ptrn_hl .. ptrn_value
+            p_hl .. p_hl .. p_value .. p_hl .. p_padding .. p_value .. p_padding
         )
     end
     if t.icon_hl then
-        t.icon_color = { fg = M.get_color(t.icon_hl, 'fg#'), bg = M.get_color(t.icon_hl, 'bg#') }
+        t.icon_color = {
+            fg = M.get_gui_color(t.icon_hl, 'fg#'),
+            bg = M.get_gui_color(t.icon_hl, 'bg#'),
+        }
     end
     -- or try to match a component with one color
     if not t.icon_hl then
-        t.hl, t.value = string.match(rendered_component, ptrn_hl .. ptrn_value)
+        t.hl, t.value = string.match(rendered_component, p_hl .. p_padding .. p_value)
     end
     if t.hl then
-        t.color = { fg = M.get_color(t.hl, 'fg#'), bg = M.get_color(t.hl, 'bg#') }
+        t.color = { fg = M.get_gui_color(t.hl, 'fg#'), bg = M.get_gui_color(t.hl, 'bg#') }
     else
         -- the last option is a component without colors
         t.value = rendered_component
     end
     -- now, we can try to separate the icon and the value
     if not t.icon then
+        local value, icon
         if is_right_icon then
-            t.value, t.icon = string.match(t.value, '(.*) (.+)') or t.value, nil
+            value, icon = string.match(t.value, '(.*) (.+)')
         else
-            t.icon, t.value = string.match(t.value, '(.+) (.*)') or nil, t.value
+            icon, value = string.match(t.value, '(.+) (.*)')
         end
+        t.icon = icon
+        t.value = value or t.value
     end
     return t
 end
@@ -104,7 +113,7 @@ function M.render_component(component, opts)
 end
 
 ---@return ComponentTable
-function M.extract_component(component, opts)
+function M.match_component(component, opts)
     local rendered_component = M.render_component(component, opts)
     return M.match_rendered_component(rendered_component)
 end

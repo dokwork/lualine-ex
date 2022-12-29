@@ -65,7 +65,8 @@ else
             },
             lualine_c = { 'ex.git.branch' },
             lualine_y = {
-                { 'ex.lsp', icons = { ['null-ls'] = { 'N', color = 'magenta' } } },
+                { 'ex.lsp.single', icons = { ['null-ls'] = { 'N1', color = { fg = 'magenta' } } } },
+                { 'ex.lsp.all', icons = { ['null-ls'] = { 'Na', color = { fg = 'purple' } } } },
                 'ex.spellcheck',
             },
         },
