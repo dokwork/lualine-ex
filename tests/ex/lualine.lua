@@ -11,7 +11,8 @@ function M.opts(opts)
     opts = opts or {}
     opts.hl = opts.hl or ''
     opts.padding = opts.padding or 0
-    opts.icons_enabled = opts.icons_enabled or true
+    -- turn on icons by default:
+    opts.icons_enabled = opts.icons_enabled == nil or opts.icons_enabled
     opts.theme = opts.theme or 'gruvbox'
     opts.self = opts.self or { section = 'c' }
     opts.component_separators = opts.component_separators

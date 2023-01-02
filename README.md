@@ -30,7 +30,7 @@ This component provides an information about the first active lsp client.
 An icon and color are taken from the `icons` table or `nvim-wev-devicons` plugin (if it's installed). 
 If no one icon was found for lsp client neither in `icons`, nor in `nvim-wev-devicons`, the `unknown` icon 
 will be used. For the case, when no one server is run, the component is in disabled state and has
-the `lsp_off` icon.
+the `lsp_is_off` icon.
 
 An icon should be either string, or a table with following format: the `[1]` element must be a string with
 icon's symbol; the optional element `color` should be or a name of a color, or a color in #RGB format, 
@@ -52,7 +52,7 @@ sections = {
         unknown = '?', 
 
         -- Default icon for a case, when no one server is run:
-        lsp_off = 'ﮤ',
+        lsp_is_off = 'ﮤ',
 
         -- Example of the icon for a client, which doesn't have an icon in `nvim-web-devicons`:
         ['null-ls'] = { 'N', color = 'magenta' }
@@ -70,17 +70,14 @@ sections = {
 This component provides an information about all run LSP servers. Every server has its own color and icon.
 When some of already run server is not active for the current buffer, it is in disabled state.
 
-The `ex.lsp.all` component has the same options as the `ex.lsp.single` component, but with few
-differences:
+The `ex.lsp.all` component has the same options as the `ex.lsp.single` component, with additional
+option `only_attached`, which can be used to show only attached to the current buffer clients:
 
 ```lua
 sections = {
   lualine_a = {
     {
       'ex.lsp.all',
-
-      -- The option to show only icons has a plural form:
-      icons_only = false,
 
       -- If true then only clients attached to the current buffer will be shown:
       only_attached = false

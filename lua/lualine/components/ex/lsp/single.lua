@@ -80,7 +80,7 @@ end
 ---@field icon LualineIcon | string
 ---@field icons LspIcons
 ---@field icons_enabled boolean
----@field icon_only boolean
+---@field icons_only boolean
 
 ---@class SingleLsp: ExComponent
 ---@field super ExComponent
@@ -98,9 +98,15 @@ function Lsp:pre_init()
     self.client = self.options.client
     local client_name = self.client and str_escape(self.client.name)
     self.options.component_name = 'ex_lsp_' .. (client_name or 'single')
-    self.options.padding = self.options.padding or (self.options.icon_only and 0 or 1)
+    self.options.padding = self.options.padding or (self.options.icons_only and 0 or 1)
     self.options.color = function()
-        return type(self.options.icon) == 'table' and self.options.icon.color or nil
+        if type(self.options.icon) == 'table' then
+            return self.options.icon.color
+        else
+            -- for case when {not self.options.icons_enabled}
+            local icon = self.client and lsp_client_icon(self.client, self.options.icons)
+            return type(icon) == 'table' and icon.color or nil
+        end
     end
     log.fmt_debug(
         'A new ex.lsp.single component has been created with a name: %s',
@@ -109,8 +115,13 @@ function Lsp:pre_init()
     self:__update_icon(self.client)
 end
 
+-- HACK: to avoid creating a new highlight for a similar client inside the ex.lsp.all,
+-- we should try to use the cache:
 function Lsp:create_option_highlights()
     local function copy(t, options)
+        if not t then
+            return nil
+        end
         local res = vim.tbl_extend('keep', t, {})
         res.options = options
         return res
@@ -119,8 +130,8 @@ function Lsp:create_option_highlights()
         local cache = self.options.hls_cache
         local key = self.client.name
         log.fmt_debug('Getting highlights from the cache for the %s client', key)
-        self.options.color_highlight = copy(cache[key], self.options)
-        self.options.icon_color_highlight = copy(cache[key .. 'icon'], self.options)
+        self.options.__enabled_hl = copy(cache[key], self.options)
+        self.options.__enabled_icon_hl = copy(cache[key .. 'icon'], self.options)
         self.options.__disabled_hl = copy(cache[key .. 'disabled'], self.options)
         self.options.__disabled_icon_hl = copy(cache[key .. 'disabled_icon'], self.options)
     end
@@ -130,14 +141,12 @@ function Lsp:create_option_highlights()
         end
         local key = self.client.name
         log.fmt_debug('Putting highlights to the cache for the %s client', key)
-        self.options.hls_cache[key] = copy(self.options.color_highlight)
-        self.options.hls_cache[key .. 'icon'] = copy(self.options.icon_color_highlight)
+        self.options.hls_cache[key] = copy(self.options.__enabled_hl)
+        self.options.hls_cache[key .. 'icon'] = copy(self.options.__enabled_icon_hl)
         self.options.hls_cache[key .. 'disabled'] = copy(self.options.__disabled_hl)
         self.options.hls_cache[key .. 'disabled_icon'] = copy(self.options.__disabled_icon_hl)
     end
 
-    -- HACK: to avoid creating a new highlight for a similar client,
-    -- we should use cache:
     local hl = self.options.hls_cache and self.options.hls_cache[self.client.name]
     if hl then
         get_higlights_from_cache()
@@ -153,7 +162,11 @@ end
 
 function Lsp:update_status()
     self:__update_client()
-    return (self.options.icon_only or not self.client) and '' or self.client.name
+    if self.options.icons_only or not self.client then
+        return ''
+    else
+        return self.client.name
+    end
 end
 
 ---@private
@@ -175,12 +188,16 @@ function Lsp:__update_client()
             client.name,
             client.id
         )
-        self:__update_icon(self.client)
     end
+    self:__update_icon(self.client)
 end
 
 ---@private
 function Lsp:__update_icon(client)
+    if not self.options.icons_enabled then
+        log.fmt_debug('Icons are disabled for %s.', self.options.component_name)
+        return
+    end
     if client then
         self.options.icon = lsp_client_icon(client, self.options.icons)
         log.fmt_debug(
