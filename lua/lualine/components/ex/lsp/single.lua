@@ -93,7 +93,8 @@ local Lsp = require('lualine.ex.component'):extend({
 })
 
 function Lsp:pre_init()
-    local client_name = self.options.client and str_escape(self.options.client.name)
+    self.client = self.options.client
+    local client_name = self.client and str_escape(self.client.name)
     self.options.component_name = 'ex_lsp_' .. (client_name or 'single')
     self.options.padding = self.options.padding or (self.options.icon_only and 0 or 1)
     self.options.color = function()
@@ -103,11 +104,11 @@ function Lsp:pre_init()
         'A new ex.lsp.single component has been created with a name: %s',
         self.options.component_name
     )
-    self:__update_icon(self.options.client)
+    self:__update_icon(self.client)
 end
 
 function Lsp:is_enabled()
-    return is_lsp_client_active(self.options.client)
+    return is_lsp_client_active(self.client)
 end
 
 function Lsp:update_status()
@@ -115,29 +116,29 @@ function Lsp:update_status()
     if self.options.icon_only then
         return ''
     end
-    return self:is_enabled() and self.options.client.name or ''
+    return self:is_enabled() and self.client.name or ''
 end
 
 ---@private
 function Lsp:__update_client()
-    if self.options.parent then
+    if self.options.client then
         return
     end
 
     local clients = vim.lsp.get_active_clients({ bufnr = 0 })
     local _, client = next(clients or {})
-    if (client and self.options.client) and (client.id == self.options.client.id) then
+    if (client and self.client) and (client.id == self.client.id) then
         return
     end
 
-    self.options.client = client
+    self.client = client
     if client then
         log.fmt_debug(
             'The client was changed. The new client is %s with id %d',
             client.name,
             client.id
         )
-        self:__update_icon(self.options.client)
+        self:__update_icon(self.client)
     end
 end
 

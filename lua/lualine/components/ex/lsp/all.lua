@@ -1,3 +1,4 @@
+local log = require('plenary.log').new({ plugin = 'ex.lsp.all' })
 local ex = require('lualine.ex')
 local SingleLsp = require('lualine.components.ex.lsp.single')
 
@@ -7,11 +8,12 @@ local SingleLsp = require('lualine.components.ex.lsp.single')
 
 ---@class AllLspComponent: ExComponent
 ---@field options AllLspOptions
+---@field components table
 local AllLsp = require('lualine.ex.component'):extend(SingleLsp.default_options)
 
 function AllLsp:pre_init()
     self.options.component_name = 'ex_lsp_all'
-    self.__components = {}
+    self.components = {}
 end
 
 function AllLsp:is_enabled()
@@ -31,12 +33,13 @@ function AllLsp:update_status(is_focused)
     local status = ''
     if self:is_enabled() then
         self.options.icon = nil
-        for _, client in pairs(self:__clients()) do
-            local lsp = self.__components[client.name .. client.id]
+        local clients = self:__clients()
+        log.fmt_debug('%d lsp clients have been found', #clients)
+        for _, client in pairs(clients) do
+            local lsp = self.components[client.name .. client.id]
             if not lsp then
                 lsp = SingleLsp:new({
                     client = client,
-                    parent = self.options.component_name,
                     self = self.options.self,
                     icons = self.options.icons,
                     icons_enabled = self.options.icons_enabled,
@@ -45,7 +48,7 @@ function AllLsp:update_status(is_focused)
                     disabled_color = self.options.disabled_color,
                     disabled_icon_color = self.options.disabled_icon_color,
                 })
-                self.__components[client.name .. client.id] = lsp
+                self.components[client.name .. client.id] = lsp
             end
             status = status .. lsp:draw(self.default_hl, is_focused)
         end

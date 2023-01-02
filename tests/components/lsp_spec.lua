@@ -1,5 +1,5 @@
 local l = require('tests.ex.lualine')
-local t = require('tests.ex.busted') --:ignore_all_tests()
+local t = require('tests.ex.busted') -- :ignore_all_tests()
 local mock = require('luassert.mock')
 local devicons = require('nvim-web-devicons').get_icons()
 
@@ -88,12 +88,9 @@ describe('ex.lsp.single component', function()
             eq(vim_icon.color, ctbl.color.fg, 'Wrong color in the rendered component: ' .. rc)
         end)
 
-        it('should not be changed if a parent was specified', function()
+        it('should not be changed if the client was specified in options', function()
             -- given:
-            local lsp = l.init_component(
-                component_name,
-                l.opts({ parent = 'some_component', client = vim_lsp })
-            )
+            local lsp = l.init_component(component_name, l.opts({ client = vim_lsp }))
             vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') })
 
             -- when:
@@ -106,5 +103,55 @@ describe('ex.lsp.single component', function()
             eq(vim_icon.icon, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
             eq(vim_icon.color, ctbl.color.fg, 'Wrong color in the rendered component: ' .. rc)
         end)
+    end)
+end)
+
+describe('ex.lsp.all component', function()
+    local component_name = 'ex.lsp.all'
+
+    before_each(function()
+        vim.mock.lsp = mock(vim.lsp, true)
+    end)
+
+    after_each(function()
+        mock.revert(vim.mock.lsp)
+    end)
+
+    it('should be disabled when no one client was found', function()
+        vim.mock.lsp.get_active_clients.returns({})
+        local all_lsp = l.init_component(component_name)
+        eq(false, all_lsp:is_enabled())
+    end)
+
+    it('should be enabled when at least one client was found', function()
+        vim.mock.lsp.get_active_clients.returns({ lua_lsp })
+        local all_lsp = l.init_component(component_name)
+        eq(true, all_lsp:is_enabled())
+    end)
+
+    it('should have `lsp_off` icon when disabled', function()
+        vim.mock.lsp.get_active_clients.returns({})
+        local opts = l.opts({ icons = { lsp_off = '-' } })
+        local rc = l.render_component(component_name, opts)
+        local ctbl = l.match_rendered_component(rc)
+        eq(opts.icons.lsp_off, ctbl.icon, 'Wrong icon in the ' .. rc)
+    end)
+
+    it('should have the ex.lsp.single components for every client', function()
+        -- given:
+        local another_lua_lsp = vim.tbl_deep_extend('keep', { id = 3 }, lua_lsp)
+        local clients = { lua_lsp, vim_lsp, another_lua_lsp }
+        vim.mock.lsp.get_active_clients.returns(clients)
+        -- when:
+        local all_lsp = l.init_component(component_name)
+        l.render_component(all_lsp)
+        -- then:
+        local clients_from_component = vim.tbl_values(vim.tbl_map(function(x)
+            return x.client
+        end, all_lsp.components))
+        table.sort(clients_from_component, function(x, y)
+            return x.id < y.id
+        end)
+        same(clients, clients_from_component)
     end)
 end)
