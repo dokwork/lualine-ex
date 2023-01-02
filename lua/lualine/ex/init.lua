@@ -24,40 +24,26 @@ end
 
 ---@type fun(t1: table, t2: table): table
 ---The same as `vim.tbl_extend('keep', t1 or {}, t2 or {})`,
-M.merge = function(t1, t2)
+M.extend = function(t1, t2)
     return vim.tbl_extend('keep', t1 or {}, t2 or {})
 end
 
----@type fun(t1: table, t2: table): table
----The same as `vim.tbl_deep_extend('keep', t1 or {}, t2 or {})`
----but can work with mixed tables (with numeric and string keys).
----If passed only the first argument, this method works as deep copy,
----and returns a copy of the argument.
----If one of the arguments is not a table, the first argument will be returned.
-M.deep_merge = function(t1, t2)
-    t1 = t1 or {}
-    t2 = t2 or {}
-
-    if type(t1) ~= 'table' then
-        return t1
-    end
-    local res = {}
-    for key, value in pairs(t1) do
-        res[key] = type(value) == 'table' and M.deep_merge(value) or value
-    end
-
-    if type(t2) ~= 'table' then
-        return t1
-    end
-
-    for key, value in pairs(t2) do
-        if type(value) == 'table' then
-            res[key] = t1[key] ~= nil and M.deep_merge(t1[key], value) or M.deep_merge(value)
-        elseif t1[key] == nil then
-            res[key] = value
+---@type fun(dest: table, source: table): table
+--- Puts all absent key-value pairs from the {source} to the {dest}.
+---@return table dest with added pairs.
+M.merge = function (dest, source)
+    vim.validate({ dest = { dest, 'table' }, source = { source, 'table' } })
+    for key, value in pairs(dest) do
+        if type(value) == 'table' and type(source[key]) == 'table' then
+            M.merge(value, source[key])
         end
     end
-    return res
+    for key, value in pairs(source) do
+        if dest[key] == nil then
+            dest[key] = value
+        end
+    end
+    return dest
 end
 
 return M

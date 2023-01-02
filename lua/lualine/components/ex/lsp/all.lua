@@ -14,6 +14,8 @@ local AllLsp = require('lualine.ex.component'):extend(SingleLsp.default_options)
 function AllLsp:pre_init()
     self.options.component_name = 'ex_lsp_all'
     self.components = {}
+    -- will be used to avoid duplicate highlights:
+    self.__hls_cache = {}
 end
 
 function AllLsp:is_enabled()
@@ -40,6 +42,7 @@ function AllLsp:update_status(is_focused)
             if not lsp then
                 lsp = SingleLsp:new({
                     client = client,
+                    hls_cache = self.__hls_cache,
                     self = self.options.self,
                     icons = self.options.icons,
                     icons_enabled = self.options.icons_enabled,
@@ -53,7 +56,7 @@ function AllLsp:update_status(is_focused)
             status = status .. lsp:draw(self.default_hl, is_focused)
         end
     else
-        self.options.icon = self.options.icons.lsp_off
+        self.options.icon = self.options.icons.lsp_is_off
     end
     return status
 end

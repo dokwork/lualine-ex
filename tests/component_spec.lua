@@ -49,7 +49,7 @@ describe('A child of the ex.component', function()
             -- when:
             Ex(init_opts)
             -- then:
-            for key, orig in pairs(ex.merge(init_opts, def_opts)) do
+            for key, orig in pairs(ex.extend(init_opts, def_opts)) do
                 same(orig, passed_opts[key])
             end
         end)

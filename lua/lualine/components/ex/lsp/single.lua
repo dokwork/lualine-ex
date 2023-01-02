@@ -1,5 +1,7 @@
 local log = require('plenary.log').new({ plugin = 'ex.lsp.single' })
 
+local h = require('lualine.highlight')
+
 ---@class LspClient object which is returned from the `vim.lsp.client()`.
 ---@field id number     The id allocated to the client.
 ---@field name string   If a name is specified on creation, that will be used.
@@ -12,7 +14,7 @@ local log = require('plenary.log').new({ plugin = 'ex.lsp.single' })
 ---@class LspIcons A table with icons for lsp clients. Keys are names of the lsp servers or
 ---  appropriate file types.
 ---@field unknown LspIcon  An icon for unknown lsp client.
----@field lsp_off string   A symbol to illustrate that no one client exists.
+---@field lsp_is_off string   A symbol to illustrate that no one client exists.
 
 local __devicons
 
@@ -73,7 +75,7 @@ end
 
 ---@class SingleLspOptions: ExComponentOptions
 ---@field client? LspClient
----@field parent? string
+---@field hls_cache? table
 ---@field self { section: string }
 ---@field icon LualineIcon | string
 ---@field icons LspIcons
@@ -88,7 +90,7 @@ end
 local Lsp = require('lualine.ex.component'):extend({
     icons = {
         unknown = '?',
-        lsp_off = 'ﮤ',
+        lsp_is_off = 'ﮤ',
     },
 })
 
@@ -107,16 +109,51 @@ function Lsp:pre_init()
     self:__update_icon(self.client)
 end
 
+function Lsp:create_option_highlights()
+    local function copy(t, options)
+        local res = vim.tbl_extend('keep', t, {})
+        res.options = options
+        return res
+    end
+    local function get_higlights_from_cache()
+        local cache = self.options.hls_cache
+        local key = self.client.name
+        log.fmt_debug('Getting highlights from the cache for the %s client', key)
+        self.options.color_highlight = copy(cache[key], self.options)
+        self.options.icon_color_highlight = copy(cache[key .. 'icon'], self.options)
+        self.options.__disabled_hl = copy(cache[key .. 'disabled'], self.options)
+        self.options.__disabled_icon_hl = copy(cache[key .. 'disabled_icon'], self.options)
+    end
+    local function put_higlights_to_cache()
+        if not self.options.hls_cache then
+            return
+        end
+        local key = self.client.name
+        log.fmt_debug('Putting highlights to the cache for the %s client', key)
+        self.options.hls_cache[key] = copy(self.options.color_highlight)
+        self.options.hls_cache[key .. 'icon'] = copy(self.options.icon_color_highlight)
+        self.options.hls_cache[key .. 'disabled'] = copy(self.options.__disabled_hl)
+        self.options.hls_cache[key .. 'disabled_icon'] = copy(self.options.__disabled_icon_hl)
+    end
+
+    -- HACK: to avoid creating a new highlight for a similar client,
+    -- we should use cache:
+    local hl = self.options.hls_cache and self.options.hls_cache[self.client.name]
+    if hl then
+        get_higlights_from_cache()
+    else
+        Lsp.super.create_option_highlights(self)
+        put_higlights_to_cache()
+    end
+end
+
 function Lsp:is_enabled()
     return is_lsp_client_active(self.client)
 end
 
 function Lsp:update_status()
     self:__update_client()
-    if self.options.icon_only then
-        return ''
-    end
-    return self:is_enabled() and self.client.name or ''
+    return (self.options.icon_only or not self.client) and '' or self.client.name
 end
 
 ---@private
@@ -152,7 +189,7 @@ function Lsp:__update_icon(client)
             self.options.icon
         )
     else
-        self.options.icon = self.options.icons.lsp_off
+        self.options.icon = self.options.icons.lsp_is_off
         log.debug('No one client was found. Lsp is off.')
     end
 end

@@ -1,8 +1,8 @@
 local uc = require('lualine.utils.color_utils')
 
--- choose default theme
+-- choose a default theme
 require('lualine.highlight').create_highlight_groups(require('lualine.themes.gruvbox'))
--- mark current window as actual to make all components active
+-- mark the current window as actual to make all components active
 vim.g.actual_curwin = vim.api.nvim_get_current_win()
 
 local M = {}

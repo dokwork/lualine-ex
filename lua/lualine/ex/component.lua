@@ -21,7 +21,7 @@ local Ex = require('lualine.component'):extend()
 
 function Ex:extend(default_options)
     local cls = self.super.extend(self)
-    cls.default_options = ex.deep_merge(default_options, {
+    cls.default_options = ex.merge(vim.deepcopy(default_options), {
         always_show_icon = true,
         disabled_color = { fg = 'grey' },
         is_enabled = true,
@@ -30,7 +30,7 @@ function Ex:extend(default_options)
 end
 
 function Ex:init(options)
-    options = ex.deep_merge(options, self.default_options)
+    options = ex.merge(options, self.default_options)
     self.options = options
     self:pre_init()
     Ex.super.init(self, options)
@@ -49,6 +49,11 @@ function Ex:post_init() end
 ---creates hl group from color option
 function Ex:create_option_highlights()
     Ex.super.create_option_highlights(self)
+    self:create_option_disabled_highlights()
+end
+
+---@protected
+function Ex:create_option_disabled_highlights()
     -- remember enabled highlights
     self.options.__enabled_hl = self.options.color_highlight
     self.options.__enabled_icon_hl = self.options.icon_color_highlight
