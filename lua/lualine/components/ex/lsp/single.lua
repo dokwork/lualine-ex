@@ -66,11 +66,6 @@ local function is_lsp_client_active(client)
     return is_active and is_lsp_client_ready(client)
 end
 
-local function str_escape(str)
-    str = str:gsub('-', '_')
-    return str
-end
-
 ---@class SingleLspOptions: ExComponentOptions
 ---@field client? LspClient
 ---@field self { section: string }
@@ -91,10 +86,10 @@ local Lsp = require('lualine.ex.component'):extend({
     },
 })
 
+---@protected
 function Lsp:pre_init()
     self.client = self.options.client
-    local client_name = self.client and str_escape(self.client.name)
-    self.options.component_name = 'ex_lsp_' .. (client_name or 'single')
+    self.options.component_name = self.options.component_name or 'ex_lsp_single'
     self.options.padding = self.options.padding or (self.options.icons_only and 0 or 1)
     self.options.color = function()
         if type(self.options.icon) == 'table' then
@@ -116,6 +111,7 @@ function Lsp:is_enabled()
     return is_lsp_client_active(self.client)
 end
 
+---@protected
 function Lsp:update_status()
     self:__update_client()
     if self.options.icons_only or not self.client then

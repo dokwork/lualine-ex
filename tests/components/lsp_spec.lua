@@ -1,5 +1,5 @@
 local l = require('tests.ex.lualine')
-local t = require('tests.ex.busted')--ignore_all_tests()
+local t = require('tests.ex.busted') --ignore_all_tests()
 local mock = require('luassert.mock')
 local devicons = require('nvim-web-devicons').get_icons()
 
@@ -192,6 +192,21 @@ describe('ex.lsp.all component', function()
         same(clients, clients_from_component)
     end)
 
+    it('should remove components for stopped clients', function()
+        -- given:
+        local all_lsp = l.init_component(component_name)
+        vim.mock.lsp.get_active_clients.returns({ lua_lsp, vim_lsp })
+        l.render_component(all_lsp)
+        eq(2, vim.tbl_count(all_lsp.components), 'Wrong init count of the components')
+        -- when:
+        vim.mock.lsp.get_active_clients.returns({ vim_lsp })
+        l.render_component(all_lsp)
+        -- then:
+        eq(1, vim.tbl_count(all_lsp.components), 'Wrong components count after update')
+        local _, component = next(all_lsp.components)
+        same(vim_lsp, component.client)
+    end)
+
     it('should reuse already existed highlight group', function()
         local function get_all_highlights(rendered_component)
             local acc = {}
@@ -214,7 +229,7 @@ describe('ex.lsp.all component', function()
         })
         vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') })
         -- when:
-        local rc = l.render_component(component_name, { icons_enabled = false})
+        local rc = l.render_component(component_name, { icons_enabled = false })
         -- then:
         local hls = get_all_highlights(rc)
         eq(#hls, count(hls, hls[1]), 'Not all highlights are equal in ' .. rc)

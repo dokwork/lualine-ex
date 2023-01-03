@@ -2,6 +2,11 @@ local log = require('plenary.log').new({ plugin = 'ex.lsp.all' })
 local ex = require('lualine.ex')
 local SingleLsp = require('lualine.components.ex.lsp.single')
 
+local function str_escape(str)
+    str = str:gsub('-', '_')
+    return str
+end
+
 ---@class AllLspOptions: SingleLspOptions
 ---@field only_attached boolean
 ---@field icons_only boolean
@@ -11,6 +16,7 @@ local SingleLsp = require('lualine.components.ex.lsp.single')
 ---@field components table
 local AllLsp = require('lualine.ex.component'):extend(SingleLsp.default_options)
 
+---@protected
 function AllLsp:pre_init()
     self.options.component_name = 'ex_lsp_all'
     self.components = {}
@@ -25,23 +31,31 @@ end
 ---@private
 function AllLsp:__clients()
     if self.options.only_attached == true then
-        return vim.lsp.get_active_clients({ bufnum = 0 })
+        return vim.lsp.get_active_clients({ bufnr = 0 })
     else
         return vim.lsp.get_active_clients()
     end
 end
 
+local function key(client)
+    return client.name .. '_' .. client.id
+end
+
+---@protected
 function AllLsp:update_status(is_focused)
     local status = ''
     if self:is_enabled() then
         self.options.icon = nil
         local clients = self:__clients()
         log.fmt_debug('%d lsp clients have been found', #clients)
+        self:__actualize_components(clients)
         for _, client in pairs(clients) do
-            local lsp = self.components[client.name .. client.id]
+            local key = key(client)
+            local lsp = self.components[key]
             if not lsp then
                 lsp = SingleLsp:new({
                     client = client,
+                    component_name = str_escape('inner_lsp_' .. client.name),
                     hls_cache = self.__hls_cache,
                     self = self.options.self,
                     icons = self.options.icons,
@@ -51,7 +65,7 @@ function AllLsp:update_status(is_focused)
                     disabled_color = self.options.disabled_color,
                     disabled_icon_color = self.options.disabled_icon_color,
                 })
-                self.components[client.name .. client.id] = lsp
+                self.components[key] = lsp
             end
             status = status .. lsp:draw(self.default_hl, is_focused)
         end
@@ -59,6 +73,19 @@ function AllLsp:update_status(is_focused)
         self.options.icon = self.options.icons.lsp_is_off
     end
     return status
+end
+
+---@private
+function AllLsp:__actualize_components(clients)
+    local actual_components = {}
+    for _, client in ipairs(clients) do
+        local key = key(client)
+        local component = self.components[key]
+        if component then
+            actual_components[key] = component
+        end
+    end
+    self.components = actual_components
 end
 
 return AllLsp

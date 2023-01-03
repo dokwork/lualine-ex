@@ -26,6 +26,7 @@ function Ex:extend(default_options)
     return cls
 end
 
+---@private
 function Ex:init(options)
     options = ex.merge(options, self.default_options)
     self.options = options
@@ -34,16 +35,18 @@ function Ex:init(options)
     self:post_init()
 end
 
----Initialization hook. Runs before {Ex.super.init}.
+---Initialization hook. It's run before {Ex.super.init}.
 ---@param options table The {ExComponentOptions} merged with {default_options}.
----@return table # Optionally patched options.
+---@protected
 function Ex:pre_init() end
 
----Initialization hook. Runs right after {Ex.super.init}.
+---Initialization hook. It's run right after {Ex.super.init}.
 ---@param options table The {ExComponentOptions} merged with {default_options}.
+---@protected
 function Ex:post_init() end
 
 ---creates hl group from color option
+---@private
 function Ex:create_option_highlights()
     local function copy(t, options)
         if not t then
@@ -104,6 +107,7 @@ function Ex:is_enabled()
 end
 
 --- Disable component should have disabled color
+---@private
 function Ex:__update_colors_if_disabled()
     if self:is_enabled() then
         self.options.color_highlight = self.options.__enabled_hl
@@ -115,6 +119,7 @@ function Ex:__update_colors_if_disabled()
 end
 
 ---Overridden method to draw this component.
+---@final
 function Ex:draw(default_highlight, is_focused)
     self.status = ''
     self.applied_separator = ''
