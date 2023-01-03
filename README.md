@@ -130,7 +130,7 @@ sections = {
 
 The `lualine.ex.component` is an abstract class, which extends the `lualine.component` to make it possible to
 show an icon even for empty component in 'disabled' state. A state of the component depends on the result
-of the `is_enabled` function:
+of the `is_enabled` method:
 
 ```lua
 -- You can specify default options for every child of your class
@@ -154,7 +154,8 @@ end
 return Spell
 ```
 
-The difference between cases when `cond = false` and `is_enabled = false` is that in the first case
-component will not be rendered at all, but in the second case only an icon with `disabled_color` will be shown. 
+The difference between cases when `cond = false` and `is_enabled = false` is in the first case
+component will not be rendered at all, but in the second case only an icon with `disabled_color` 
+will be shown. 
 
 The `disabled_color` can be specified in the same manner as the `color` for the component.

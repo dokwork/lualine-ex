@@ -60,10 +60,12 @@ describe('A child of the ex.component', function()
             -- given:
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
-                is_enabled = false,
             })
             function Child:update_status()
                 return ''
+            end
+            function Child:is_enabled()
+                return false
             end
             local cmp = Child(u.opts())
 
@@ -79,11 +81,13 @@ describe('A child of the ex.component', function()
             -- given:
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
-                is_enabled = false,
                 always_show_icon = false,
             })
             function Child:update_status()
                 return ''
+            end
+            function Child:is_enabled()
+                return false
             end
             local cmp = Child(u.opts())
 
@@ -98,7 +102,6 @@ describe('A child of the ex.component', function()
             -- given:
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
-                is_enabled = true,
                 always_show_icon = true,
                 cond = function()
                     return false
@@ -118,11 +121,12 @@ describe('A child of the ex.component', function()
 
         it('should use `disabled_color` if the component is not enabled', function()
             -- given:
-            local Child = require('lualine.ex.component'):extend({
-                is_enabled = false,
-            })
+            local Child = require('lualine.ex.component'):extend()
             function Child:update_status()
                 return 'some_text'
+            end
+            function Child:is_enabled()
+                return false
             end
             local cmp = Child(u.opts())
 
@@ -144,12 +148,12 @@ describe('A child of the ex.component', function()
             local is_enabled = true
             local Child = require('lualine.ex.component'):extend({
                 color = { fg = 'green' },
-                is_enabled = function()
-                    return is_enabled
-                end,
             })
             function Child:update_status()
                 return 'some_text'
+            end
+            function Child:is_enabled()
+                return is_enabled
             end
             local cmp = Child(u.opts())
 

@@ -6,7 +6,6 @@ local log = require('plenary.log').new({ plugin = 'ex.component' })
 ---@field always_show_icon boolean True means that icon should be shown even for inactive component.
 ---@field disabled_color Color
 ---@field disabled_icon_color Color
----@field is_enabled boolean | fun(): boolean
 ---@field hls_cache? table
 
 ---@class ExComponent: LualineComponent The extension of the {LualineComponent}
@@ -20,10 +19,9 @@ local Ex = require('lualine.component'):extend()
 
 function Ex:extend(default_options)
     local cls = self.super.extend(self)
-    cls.default_options = ex.merge(vim.deepcopy(default_options), {
+    cls.default_options = ex.merge(vim.deepcopy(default_options or {}), {
         always_show_icon = true,
         disabled_color = { fg = 'grey' },
-        is_enabled = true,
     })
     return cls
 end
@@ -102,10 +100,7 @@ end
 ---`true` means component enabled and must be shown. Disabled component has only icon with
 --- {options.disabled_color}.
 function Ex:is_enabled()
-    if self.options.is_enabled and type(self.options.is_enabled) == 'function' then
-        return self.options.is_enabled()
-    end
-    return self.options.is_enabled ~= nil and self.options.is_enabled
+    return true
 end
 
 --- Disable component should have disabled color
