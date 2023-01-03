@@ -25,27 +25,27 @@ use {
 
 ### ex.lsp.single
 
-This component provides an information about the first active lsp client. 
+This component extends [ex.component](#excomponent-options) and provides information about the first active
+lsp client. 
 
-An icon and color are taken from the `icons` table or `nvim-wev-devicons` plugin (if it's installed). 
-If no one icon was found for lsp client neither in `icons`, nor in `nvim-wev-devicons`, the `unknown` icon 
+An icon and a color are taken from the `icons` table or `nvim-wev-devicons` plugin (if it's installed). 
+If no one icon was found for the lsp client neither in `icons`, nor in `nvim-wev-devicons`, the `unknown` icon 
 will be used. For the case, when no one server is run, the component is in disabled state and has
 the `lsp_is_off` icon.
 
 An icon should be either string, or a table with following format: the `[1]` element must be a string with
 icon's symbol; the optional element `color` should be or a name of a color, or a color in #RGB format, 
-or a table with `fg` color. **NOTE:** the `color` for an icon with the type of string has different
-meaning comparing to `disabled_color`. The `disabled_color` should follow the same rules as a usual
-`color` for `lualine.component`: be a name of a highlight group, or a table.
+or a table with `fg` color. 
+
+**NOTE:** the `icon.color`  with type of string has different meaning comparing to `disabled_color`. 
+The `disabled_color` should follow the same rules as a usual `color` for `lualine.component`, i.e. it should 
+be a name of a highlight group, or a table.
 
 ```lua
 sections = {
   lualine_a = {
     {
       'ex.lsp.single',
-
-      -- The color for not active lsp server
-      disabled_color = { fg = 'grey' }
 
       icons = {
         -- Default icon for any unknow server:
@@ -59,7 +59,7 @@ sections = {
       }
 
       -- If true then the name of the client will be ommited, and only an icon used:
-      icon_only = false,
+      icons_only = false,
     }
   }
 }
@@ -67,8 +67,8 @@ sections = {
 
 ### ex.lsp.all
 
-This component provides an information about all run LSP servers. Every server has its own color and icon.
-When some of already run server is not active for the current buffer, it is in disabled state.
+This component provides information about all run LSP servers. Every server has its own color and
+icon. When some of already run server is not active for the current buffer, it is in disabled state.
 
 The `ex.lsp.all` component has the same options as the `ex.lsp.single` component, with additional
 option `only_attached`, which can be used to show only attached to the current buffer clients:
@@ -88,13 +88,13 @@ sections = {
 
 ### ex.git.branch
 
-This component provides a name of the git branch for the current working directory.
-The color of this component depends on the state of the git worktree. The component
-can show different states:
-  - `changed` means that at least one uncommitted change exists
-  - `commited` means that everything is committed, and no one tracked file is changed.
-If the `cwd` is not under git control, this component is `disabled`. By default, for a disabled 
-component an icon is shown.
+This component extends [ex.component](#excomponent-options) and provides a name of the git branch
+for the current working directory. The color of this component depends on the state of the git
+worktree. The component can show different states of the git worktree:
+
+  - `changed` means that at least one uncommitted change exists;
+  - `commited` means that everything is committed, and no one tracked file is changed;
+  - `disabled` means that the `cwd` is not under git control. 
 
 ```lua
 sections = {
@@ -105,28 +105,50 @@ sections = {
       icon = ' ',
 
       -- The `git status` command is used to check the status of the worktree.
-      -- By default, it's run in background for performance purpose, but it could lead to
+      -- By default, it's run in background for performance purpose, but it could lead to the
       -- wrong 'unknow' status at first time. `sync = true` can prevent it, but it degrades 
-      -- startup time 
+      -- startup time: 
       sync = false, 
 
-      -- The colors for possible states
+      -- The colors for possible states:
       colors = {
           changed = { fg = 'orange' },
           commited = { fg = 'green' },
       },
-
-      -- The color for disabled component
-      disabled_color = { fg = 'grey' }
-
-      -- The `true` means that icon must be shown even in case when no git repository
-      always_show_icon = true
     }
   }
 }
 ```
 
+### ex.cwd
+
+This component shows the last `depth` directories from the working path:
+
+```lua
+sections = {
+  lualine_a = {
+    {
+      'ex.cwd',
+      
+      -- count of directories from the current working path:
+      depth = 2,
+
+      -- the prefix which should be used when {depth} less than directories at all:
+      prefix = '…'
+    }
+  }
+}
+```
+
+### ex.spellcheck
+
+The simple component to show actual status of the `vim.wo.spell` option. It extends
+[ex.component.options](#excomponent-options).
+
+
 ## ExComponent
+
+**Note:** _this plugin is under develop, and API of the `lualine.ex.component` can be changed significantly._
 
 The `lualine.ex.component` is an abstract class, which extends the `lualine.component` to make it possible to
 show an icon even for empty component in 'disabled' state. A state of the component depends on the result
@@ -154,8 +176,25 @@ end
 return Spell
 ```
 
-The difference between cases when `cond = false` and `is_enabled = false` is in the first case
+The difference between cases when `cond = false` and `is_enabled = false` is that the first case
 component will not be rendered at all, but in the second case only an icon with `disabled_color` 
 will be shown. 
 
 The `disabled_color` can be specified in the same manner as the `color` for the component.
+
+### ExComponent options
+
+Every child of the `lualine.ex.component` inherit the following options:
+
+```lua
+{
+  -- The color for the disabled component:
+  disabled_color = { fg = 'grey' }
+
+  -- The color for the icon of the disabled component:
+  disabled_icon_color = { fg = '#D3D3D3' }
+
+  -- The `true` means that the icon must be shown even in case when component is empty:
+  always_show_icon = true
+}
+```
