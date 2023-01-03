@@ -1,14 +1,13 @@
 local ex = require('lualine.ex')
 
+local log = require('plenary.log').new({ plugin = 'ex.component' })
+
 ---@class ExComponentOptions: LualineComponentOptions
 ---@field always_show_icon boolean True means that icon should be shown even for inactive component.
 ---@field disabled_color Color
 ---@field disabled_icon_color Color
 ---@field is_enabled boolean | fun(): boolean
----@field __enabled_hl HighlightToken
----@field __enabled_icon_hl HighlightToken
----@field __disabled_hl HighlightToken
----@field __disabled_icon_hl HighlightToken
+---@field hls_cache? table
 
 ---@class ExComponent: LualineComponent The extension of the {LualineComponent}
 --- which provide ability to mark the component as disabled and use a custom icon
@@ -48,8 +47,44 @@ function Ex:post_init() end
 
 ---creates hl group from color option
 function Ex:create_option_highlights()
-    Ex.super.create_option_highlights(self)
-    self:create_option_disabled_highlights()
+    local function copy(t, options)
+        if not t then
+            return nil
+        end
+        local res = vim.tbl_extend('keep', t, {})
+        res.options = options
+        return res
+    end
+    local function get_higlights_from_cache()
+        local cache = self.options.hls_cache
+        local key = self.options.component_name
+        log.fmt_debug('Getting highlights from the cache for the %s component', key)
+        self.options.__enabled_hl = copy(cache[key], self.options)
+        self.options.__enabled_icon_hl = copy(cache[key .. 'icon'], self.options)
+        self.options.__disabled_hl = copy(cache[key .. 'disabled'], self.options)
+        self.options.__disabled_icon_hl = copy(cache[key .. 'disabled_icon'], self.options)
+    end
+    local function put_higlights_to_cache()
+        if not self.options.hls_cache then
+            return
+        end
+        local key = self.options.component_name
+        log.fmt_debug('Putting highlights to the cache for the %s component', key)
+        self.options.hls_cache[key] = copy(self.options.__enabled_hl)
+        self.options.hls_cache[key .. 'icon'] = copy(self.options.__enabled_icon_hl)
+        self.options.hls_cache[key .. 'disabled'] = copy(self.options.__disabled_hl)
+        self.options.hls_cache[key .. 'disabled_icon'] = copy(self.options.__disabled_icon_hl)
+    end
+
+    -- HACK: to avoid creating a new highlight for a similar component inside a parent,
+    -- we should try to use the cache:
+    if self.options.hls_cache then
+        get_higlights_from_cache()
+    else
+        Ex.super.create_option_highlights(self)
+        self:create_option_disabled_highlights()
+        put_higlights_to_cache()
+    end
 end
 
 ---@protected

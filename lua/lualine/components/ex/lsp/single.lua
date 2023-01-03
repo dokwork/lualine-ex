@@ -1,7 +1,5 @@
 local log = require('plenary.log').new({ plugin = 'ex.lsp.single' })
 
-local h = require('lualine.highlight')
-
 ---@class LspClient object which is returned from the `vim.lsp.client()`.
 ---@field id number     The id allocated to the client.
 ---@field name string   If a name is specified on creation, that will be used.
@@ -11,8 +9,8 @@ local h = require('lualine.highlight')
 
 ---@alias LspIcon string | LualineIcon | DevIcon
 
----@class LspIcons A table with icons for lsp clients. Keys are names of the lsp servers or
----  appropriate file types.
+---@class LspIcons: table<string, LspIcon> A table with icons for lsp clients.
+--- Keys are names of the lsp servers or appropriate file types.
 ---@field unknown LspIcon  An icon for unknown lsp client.
 ---@field lsp_is_off string   A symbol to illustrate that no one client exists.
 
@@ -31,8 +29,8 @@ end
 ---Takes a type of the file from the {client} and tries to take a corresponding icon
 ---from the {icons} or 'nvim-web-devicons'.
 ---
----@param client LspClient               A client to a LSP server.
----@param icons table<string, LspIcon> # A table with icons for lsp clients.
+---@param client LspClient  A client to a LSP server.
+---@param icons LspIcons    A table with icons for lsp clients.
 ---
 ---@return string | LualineIcon # An icon of the LspClient or `nil` when the {client} is absent or icon not found.
 local function lsp_client_icon(client, icons)
@@ -75,7 +73,6 @@ end
 
 ---@class SingleLspOptions: ExComponentOptions
 ---@field client? LspClient
----@field hls_cache? table
 ---@field self { section: string }
 ---@field icon LualineIcon | string
 ---@field icons LspIcons
@@ -103,7 +100,7 @@ function Lsp:pre_init()
         if type(self.options.icon) == 'table' then
             return self.options.icon.color
         else
-            -- for case when {not self.options.icons_enabled}
+            -- for a case when {not self.options.icons_enabled}
             local icon = self.client and lsp_client_icon(self.client, self.options.icons)
             return type(icon) == 'table' and icon.color or nil
         end
@@ -113,47 +110,6 @@ function Lsp:pre_init()
         self.options.component_name
     )
     self:__update_icon(self.client)
-end
-
--- HACK: to avoid creating a new highlight for a similar client inside the ex.lsp.all,
--- we should try to use the cache:
-function Lsp:create_option_highlights()
-    local function copy(t, options)
-        if not t then
-            return nil
-        end
-        local res = vim.tbl_extend('keep', t, {})
-        res.options = options
-        return res
-    end
-    local function get_higlights_from_cache()
-        local cache = self.options.hls_cache
-        local key = self.client.name
-        log.fmt_debug('Getting highlights from the cache for the %s client', key)
-        self.options.__enabled_hl = copy(cache[key], self.options)
-        self.options.__enabled_icon_hl = copy(cache[key .. 'icon'], self.options)
-        self.options.__disabled_hl = copy(cache[key .. 'disabled'], self.options)
-        self.options.__disabled_icon_hl = copy(cache[key .. 'disabled_icon'], self.options)
-    end
-    local function put_higlights_to_cache()
-        if not self.options.hls_cache then
-            return
-        end
-        local key = self.client.name
-        log.fmt_debug('Putting highlights to the cache for the %s client', key)
-        self.options.hls_cache[key] = copy(self.options.__enabled_hl)
-        self.options.hls_cache[key .. 'icon'] = copy(self.options.__enabled_icon_hl)
-        self.options.hls_cache[key .. 'disabled'] = copy(self.options.__disabled_hl)
-        self.options.hls_cache[key .. 'disabled_icon'] = copy(self.options.__disabled_icon_hl)
-    end
-
-    local hl = self.options.hls_cache and self.options.hls_cache[self.client.name]
-    if hl then
-        get_higlights_from_cache()
-    else
-        Lsp.super.create_option_highlights(self)
-        put_higlights_to_cache()
-    end
 end
 
 function Lsp:is_enabled()
