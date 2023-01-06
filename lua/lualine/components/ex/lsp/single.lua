@@ -91,20 +91,29 @@ function Lsp:pre_init()
     self.client = self.options.client
     self.options.component_name = self.options.component_name or 'ex_lsp_single'
     self.options.padding = self.options.padding or (self.options.icons_only and 0 or 1)
-    self.options.color = function()
-        if type(self.options.icon) == 'table' then
-            return self.options.icon.color
-        else
-            -- for a case when {not self.options.icons_enabled}
-            local icon = self.client and lsp_client_icon(self.client, self.options.icons)
-            return type(icon) == 'table' and icon.color or nil
-        end
+    self:__update_icon(self.client)
+    if self.client then
+        self.options.color = type(self.options.icon) == 'table' and self.options.icon.color
+    else
+        self.options.color = self:__get_color_from_icon_wrap()
     end
     log.fmt_debug(
         'A new ex.lsp.single component has been created with a name: %s',
         self.options.component_name
     )
-    self:__update_icon(self.client)
+end
+
+---@private
+function Lsp:__get_color_from_icon_wrap()
+    return function()
+        if type(self.options.icon) == 'table' then
+            return self.options.icon.color
+        else
+            -- for the case when {not self.options.icons_enabled}
+            local icon = self.client and lsp_client_icon(self.client, self.options.icons)
+            return type(icon) == 'table' and icon.color
+        end
+    end
 end
 
 function Lsp:is_enabled()

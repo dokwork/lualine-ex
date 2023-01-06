@@ -47,7 +47,6 @@ function AllLsp:update_status(is_focused)
     if self:is_enabled() then
         self.options.icon = nil
         local clients = self:__clients()
-        log.fmt_debug('%d lsp clients have been found', #clients)
         self:__actualize_components(clients)
         for _, client in pairs(clients) do
             local key = key(client)

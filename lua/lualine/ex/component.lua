@@ -58,12 +58,19 @@ function Ex:create_option_highlights()
     end
     local function get_higlights_from_cache()
         local cache = self.options.hls_cache
+        if not cache then
+            return false
+        end
         local key = self.options.component_name
         log.fmt_debug('Getting highlights from the cache for the %s component', key)
         self.options.__enabled_hl = copy(cache[key], self.options)
         self.options.__enabled_icon_hl = copy(cache[key .. 'icon'], self.options)
         self.options.__disabled_hl = copy(cache[key .. 'disabled'], self.options)
         self.options.__disabled_icon_hl = copy(cache[key .. 'disabled_icon'], self.options)
+        return self.options.__enabled_hl
+            or self.options.__enabled_icon_hl
+            or self.options.__disabled_hl
+            or self.options.__disabled_icon_hl
     end
     local function put_higlights_to_cache()
         if not self.options.hls_cache then
@@ -79,9 +86,7 @@ function Ex:create_option_highlights()
 
     -- HACK: to avoid creating a new highlight for a similar component inside a parent,
     -- we should try to use the cache:
-    if self.options.hls_cache then
-        get_higlights_from_cache()
-    else
+    if not get_higlights_from_cache() then
         Ex.super.create_option_highlights(self)
         self:create_option_disabled_highlights()
         put_higlights_to_cache()
