@@ -84,7 +84,26 @@ describe('ex.lsp.single component', function()
         end)
 
         it(
-            'should have the `lsp_is_off` icon and the `disabled` color when no one lsp client is active',
+            'should use `unknown` icon when nor `icon` nor devicons has appropriate icon for the current client',
+            function()
+                -- given:
+                local unknown_lsp = {
+                    id = 1,
+                    name = 'unknown',
+                }
+                vim.mock.lsp.get_active_clients.returns({ unknown_lsp })
+                vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') })
+                local opts = l.opts()
+                -- when:
+                local rc = l.render_component(component_name, opts)
+                local ctbl = l.match_rendered_component(rc)
+                -- then:
+                eq(opts.icons.unknown, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
+            end
+        )
+
+        it(
+            'should use the `lsp_is_off` icon and the `disabled` color when no one lsp client is active',
             function()
                 local opts = l.opts({
                     disabled_color = { fg = '#223421' },

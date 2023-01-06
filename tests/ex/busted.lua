@@ -10,7 +10,9 @@ function M.except_it(desc, fun)
 end
 
 M.ignore_all_tests = function(self)
-    it = function(desc) M.ignore_it(desc, nil, 'ignore all') end
+    it = function(desc)
+        M.ignore_it(desc, nil, 'ignore all')
+    end
     return self
 end
 

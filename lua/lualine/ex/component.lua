@@ -22,6 +22,7 @@ function Ex:extend(default_options)
     cls.default_options = ex.merge(vim.deepcopy(default_options or {}), {
         always_show_icon = true,
         disabled_color = { fg = 'grey' },
+        disabled_icon_color = { fg = 'grey' },
     })
     return cls
 end

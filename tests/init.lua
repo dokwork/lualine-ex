@@ -26,12 +26,12 @@ require('packer').startup(function(use)
     use({
         'nvim-lualine/lualine.nvim',
         requires = {
-            { 'kyazdani42/nvim-web-devicons', opt = true },
+            { 'kyazdani42/nvim-web-devicons' },
             { 'nvim-lua/plenary.nvim' },
         },
     })
-    -- used for testing ex.lsp component
-    use({ 'jose-elias-alvarez/null-ls.nvim', requires = { 'neovim/nvim-lspconfig' } })
+    -- used for testing ex.lsp components
+    use({ 'neovim/nvim-lspconfig' })
 end)
 
 if packer_bootstrap then
@@ -39,36 +39,39 @@ if packer_bootstrap then
     print('Please, restart nvim to use installed plugins.')
 else
     -- Configuration for tests: --
+    vim.cmd('colorscheme habamax')
 
-    -- used for testing ex.spellcheck component
+    -- used for testing ex.spellcheck component:
     vim.o.spell = true
 
-    -- used for testing ex.lsp component
-    local null_ls = require('null-ls')
-    null_ls.setup({
-        sources = {
-            null_ls.builtins.formatting.stylua,
-        },
+    -- used for testing ex.lsp component:
+    local lspconfig = require('lspconfig')
+    lspconfig.sumneko_lua.setup({
+        cmd = { 'lua-language-server' },
+    })
+    lspconfig.vimls.setup({
+        cmd = { 'vim-language-server', '--stdio' },
     })
 
-    -- setup statusline with ex components
+    -- choose ex component for demo:
+    local demo_component = vim.env.component or 'ex.cwd'
+
+    local function demo_component_name()
+        return string.format("This is a demo of the '%s' component:", demo_component)
+    end
+
+    -- setup statusline with ex component:
     require('lualine').setup({
         options = {
-            theme = 'material',
+            theme = 'papercolor_dark',
         },
         sections = {
-            lualine_a = {
-                { 'ex.cwd', padding = 0, separator = '' },
-            },
-            lualine_b = {
-                { 'ex.relative_filename', padding = 0 },
-            },
-            lualine_c = { 'ex.git.branch' },
-            lualine_y = {
-                { 'ex.lsp.single', icons = { ['null-ls'] = { 'N1', color = { fg = 'magenta' } } } },
-                --{ 'ex.lsp.all', icons = { ['null-ls'] = { 'Na', color = { fg = 'purple' } } } },
-                'ex.spellcheck',
-            },
+            lualine_z = { demo_component },
+            lualine_b = {},
+            lualine_c = { demo_component_name },
+            lualine_x = {},
+            lualine_y = {},
+            lualine_a = { 'buffers' },
         },
     })
 end

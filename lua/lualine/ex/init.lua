@@ -31,7 +31,7 @@ end
 ---@type fun(dest: table, source: table): table
 --- Puts all absent key-value pairs from the {source} to the {dest}.
 ---@return table dest with added pairs.
-M.merge = function (dest, source)
+M.merge = function(dest, source)
     vim.validate({ dest = { dest, 'table' }, source = { source, 'table' } })
     for key, value in pairs(dest) do
         if type(value) == 'table' and type(source[key]) == 'table' then
