@@ -84,7 +84,7 @@ The component in _disabled_ state has a color specified in the option `disabled_
 
 If no on lsp client is run, the component shows only `lsp_is_off` icon.
 
-The `ex.lsp.all` component has the same options as the [ex.lsp.single](#ex_lsp_single) component, 
+The `ex.lsp.all` component has the same options as the [ex.lsp.single](#exlspsingle) component, 
 with additional option `only_attached`, which can be used to show only attached to the current buffer 
 clients:
 
