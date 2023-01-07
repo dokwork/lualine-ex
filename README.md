@@ -73,6 +73,8 @@ sections = {
 
 ### ex.lsp.all
 
+[demo](https://asciinema.org/a/Bv2pb3BDDwaM71T426cteg9Jk)
+
 This component provides information about status of all run LSP servers. Every server has its own
 color and icon, which can be taken from the option `icons` or plugin `nvim-wev-devicons` (if it's
 installed). 
@@ -82,7 +84,7 @@ The component in _disabled_ state has a color specified in the option `disabled_
 
 If no on lsp client is run, the component shows only `lsp_is_off` icon.
 
-The `ex.lsp.all` component has the same options as the `[ex.lsp.single](#ex_lsp_single)` component, 
+The `ex.lsp.all` component has the same options as the [ex.lsp.single](#ex_lsp_single) component, 
 with additional option `only_attached`, which can be used to show only attached to the current buffer 
 clients:
 
