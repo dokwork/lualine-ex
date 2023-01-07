@@ -1,16 +1,14 @@
 ---@alias RGB string # RGB hex color description
 
----@alias Color string | RGB # a name of the color or RGB
-
 ---@alias HighlightGroup string # a name of the highlight group
 
 ---@alias StatuslineHighlight string # `%#<HighlightGroup>#`
 
----@class Highlight # highlight definition map. See :help nvim_set_hl
+---@class Color # Highlight definition map. See :help nvim_set_hl
 ---@field fg Color
 ---@field bg Color
 
----@class LualineHighlight # any table identifier received from create_hl or create_component_highlight_group
+---@class HighlightToken # any table identifier received from create_hl or create_component_highlight_group
 ---@field name HighlightGroup
 ---@field no_mode boolean
 ---@field section string
@@ -19,7 +17,7 @@
 
 ---@class DevIcon # An object which returns from the 'nvim-web-devicons' module.
 ---@field icon string
----@field color Color
+---@field color RGB
 ---@field name string
 ---@field cterm_color string
 ---
@@ -34,6 +32,7 @@
 ---```
 
 ---@class Object
+---@field super Object
 ---@field new fun(...)
 ---@field init fun(...)
 
@@ -43,34 +42,39 @@
 
 ---@class LualineIcon
 ---@field align Aligns
----@field color { fg: Color }
+---@field color Color
 
 ---@alias Icon string | LualineIcon
 
----@class LualineComponentOptions
----@field self table
----@field component_name string
----@field color Color
+---@class LualineComponentPublicOptions
 ---@field icon Icon
 ---@field cond fun(): boolean
 ---@field fmt fun(status: string): string
 ---@field icons_enabled boolean
----@field color_highlight LualineHighlight
----@field icon_color_highlight LualineHighlight
+---@field color Color | fun(mode: string): Color
+
+---@class LualineComponentPrivateOptions
+---@field self table
+---@field component_name string
+---@field color_highlight HighlightToken
+---@field icon_color_highlight HighlightToken
+
+---@class LualineComponentOptions: LualineComponentPrivateOptions | LualineComponentPublicOptions
 
 ---@class LualineComponent: Object
 ---@field super Object
 ---@field self LualineComponent
 ---@field status string
 ---@field options LualineComponentOptions
+---@field default_hl HighlightToken
 ---@field init fun(options: LualineComponentOptions)
 ---@field create_option_highlights fun()
----@field create_hl fun(color: table|string|function, hint?: string): table
+---@field create_hl fun(color: table|string|function, hint?: string): HighlightToken
 ---@field update_status fun(is_focused: boolean)
 ---@field draw fun(default_highlight: string, is_focused: boolean): string
 ---@field apply_icon fun()
 ---@field apply_padding fun()
 ---@field apply_on_click fun()
----@field apply_highlights fun(default_highlight: LualineHighlight)
+---@field apply_highlights fun(default_highlight: HighlightToken)
 ---@field apply_section_separators fun()
 ---@field apply_separator fun()

@@ -1,14 +1,12 @@
 local ex = require('lualine.ex')
 
+local log = require('plenary.log').new({ plugin = 'ex.component' })
+
 ---@class ExComponentOptions: LualineComponentOptions
 ---@field always_show_icon boolean True means that icon should be shown even for inactive component.
 ---@field disabled_color Color
 ---@field disabled_icon_color Color
----@field is_enabled boolean | fun(): boolean
----@field __enabled_hl LualineHighlight
----@field __enabled_icon_hl LualineHighlight
----@field __disabled_hl LualineHighlight
----@field __disabled_icon_hl LualineHighlight
+---@field hls_cache? table
 
 ---@class ExComponent: LualineComponent The extension of the {LualineComponent}
 --- which provide ability to mark the component as disabled and use a custom icon
@@ -21,33 +19,83 @@ local Ex = require('lualine.component'):extend()
 
 function Ex:extend(default_options)
     local cls = self.super.extend(self)
-    cls.default_options = ex.deep_merge(default_options, {
+    cls.default_options = ex.merge(vim.deepcopy(default_options or {}), {
         always_show_icon = true,
         disabled_color = { fg = 'grey' },
-        is_enabled = true,
+        disabled_icon_color = { fg = 'grey' },
     })
     return cls
 end
 
+---@private
 function Ex:init(options)
-    options = ex.deep_merge(options, self.default_options)
-    self:pre_init(options)
+    options = ex.merge(options, self.default_options)
+    self.options = options
+    self:pre_init()
     Ex.super.init(self, options)
-    self:post_init(options)
+    self:post_init()
 end
 
----Initialization hook. Runs before {Ex.super.init}.
+---Initialization hook. It's run before {Ex.super.init}.
 ---@param options table The {ExComponentOptions} merged with {default_options}.
----@return table # Optionally patched options.
-function Ex:pre_init(options) end
+---@protected
+function Ex:pre_init() end
 
----Initialization hook. Runs right after {Ex.super.init}.
+---Initialization hook. It's run right after {Ex.super.init}.
 ---@param options table The {ExComponentOptions} merged with {default_options}.
-function Ex:post_init(options) end
+---@protected
+function Ex:post_init() end
 
 ---creates hl group from color option
+---@private
 function Ex:create_option_highlights()
-    Ex.super.create_option_highlights(self)
+    local function copy(t, options)
+        if not t then
+            return nil
+        end
+        local res = vim.tbl_extend('keep', t, {})
+        res.options = options
+        return res
+    end
+    local function get_higlights_from_cache()
+        local cache = self.options.hls_cache
+        if not cache then
+            return false
+        end
+        local key = self.options.component_name
+        log.fmt_debug('Getting highlights from the cache for the %s component', key)
+        self.options.__enabled_hl = copy(cache[key], self.options)
+        self.options.__enabled_icon_hl = copy(cache[key .. 'icon'], self.options)
+        self.options.__disabled_hl = copy(cache[key .. 'disabled'], self.options)
+        self.options.__disabled_icon_hl = copy(cache[key .. 'disabled_icon'], self.options)
+        return self.options.__enabled_hl
+            or self.options.__enabled_icon_hl
+            or self.options.__disabled_hl
+            or self.options.__disabled_icon_hl
+    end
+    local function put_higlights_to_cache()
+        if not self.options.hls_cache then
+            return
+        end
+        local key = self.options.component_name
+        log.fmt_debug('Putting highlights to the cache for the %s component', key)
+        self.options.hls_cache[key] = copy(self.options.__enabled_hl)
+        self.options.hls_cache[key .. 'icon'] = copy(self.options.__enabled_icon_hl)
+        self.options.hls_cache[key .. 'disabled'] = copy(self.options.__disabled_hl)
+        self.options.hls_cache[key .. 'disabled_icon'] = copy(self.options.__disabled_icon_hl)
+    end
+
+    -- HACK: to avoid creating a new highlight for a similar component inside a parent,
+    -- we should try to use the cache:
+    if not get_higlights_from_cache() then
+        Ex.super.create_option_highlights(self)
+        self:create_option_disabled_highlights()
+        put_higlights_to_cache()
+    end
+end
+
+---@protected
+function Ex:create_option_disabled_highlights()
     -- remember enabled highlights
     self.options.__enabled_hl = self.options.color_highlight
     self.options.__enabled_icon_hl = self.options.icon_color_highlight
@@ -61,13 +109,11 @@ end
 ---`true` means component enabled and must be shown. Disabled component has only icon with
 --- {options.disabled_color}.
 function Ex:is_enabled()
-    if self.options.is_enabled and type(self.options.is_enabled) == 'function' then
-        return self.options.is_enabled()
-    end
-    return self.options.is_enabled ~= nil and self.options.is_enabled
+    return true
 end
 
 --- Disable component should have disabled color
+---@private
 function Ex:__update_colors_if_disabled()
     if self:is_enabled() then
         self.options.color_highlight = self.options.__enabled_hl
@@ -79,6 +125,7 @@ function Ex:__update_colors_if_disabled()
 end
 
 ---Overridden method to draw this component.
+---@final
 function Ex:draw(default_highlight, is_focused)
     self.status = ''
     self.applied_separator = ''

@@ -6,13 +6,13 @@
 # got to the directory with this script (./test/):
 cd $(dirname ${BASH_SOURCE[0]})
 
-${TMPDIR:='/tmp'}
+TMPDIR=${TMPDIR:-'/tmp'}
 export XDG_CONFIG_HOME=$TMPDIR'/lualine-ex/conf'
 export XDG_DATA_HOME=$TMPDIR'/lualine-ex/data'
 
 ARG=$1
 
-if [ "$ARG" == "--reinit" ]; then
+if [ "$ARG" == "--prepare" ]; then
 
   ARG=''
   rm -rf $XDG_DATA_HOME

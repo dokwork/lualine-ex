@@ -4,6 +4,7 @@ local ex = require('lualine.ex')
 local eq = assert.are.equal
 local neq = assert.are.not_equal
 local same = assert.are.same
+local l = require('tests.ex.lualine')
 local t = require('tests.ex.busted') --:ignore_all_tests()
 
 describe('A child of the ex.component', function()
@@ -42,13 +43,13 @@ describe('A child of the ex.component', function()
             local Ex = require('lualine.ex.component'):extend(def_opts)
             local init_opts = u.opts()
             local passed_opts
-            function Ex:post_init(opts)
-                passed_opts = opts
+            function Ex:post_init()
+                passed_opts = self.options
             end
             -- when:
             Ex(init_opts)
             -- then:
-            for key, orig in pairs(ex.merge(init_opts, def_opts)) do
+            for key, orig in pairs(ex.extend(init_opts, def_opts)) do
                 same(orig, passed_opts[key])
             end
         end)
@@ -59,10 +60,12 @@ describe('A child of the ex.component', function()
             -- given:
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
-                is_enabled = false,
             })
             function Child:update_status()
                 return ''
+            end
+            function Child:is_enabled()
+                return false
             end
             local cmp = Child(u.opts())
 
@@ -78,11 +81,13 @@ describe('A child of the ex.component', function()
             -- given:
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
-                is_enabled = false,
                 always_show_icon = false,
             })
             function Child:update_status()
                 return ''
+            end
+            function Child:is_enabled()
+                return false
             end
             local cmp = Child(u.opts())
 
@@ -97,7 +102,6 @@ describe('A child of the ex.component', function()
             -- given:
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
-                is_enabled = true,
                 always_show_icon = true,
                 cond = function()
                     return false
@@ -117,11 +121,12 @@ describe('A child of the ex.component', function()
 
         it('should use `disabled_color` if the component is not enabled', function()
             -- given:
-            local Child = require('lualine.ex.component'):extend({
-                is_enabled = false,
-            })
+            local Child = require('lualine.ex.component'):extend()
             function Child:update_status()
                 return 'some_text'
+            end
+            function Child:is_enabled()
+                return false
             end
             local cmp = Child(u.opts())
 
@@ -130,13 +135,11 @@ describe('A child of the ex.component', function()
             local ctbl = u.match_rendered_component(rendered_component)
 
             -- then:
-            local expected_fg = tonumber(
-                uc.rgb2cterm(uc.color_name2rgb(Child.default_options.disabled_color.fg))
-            )
-            eq(
+            local expected_fg = uc.color_name2rgb(Child.default_options.disabled_color.fg)
+            l.eq_colors(
                 expected_fg,
-                ctbl.color and tonumber(ctbl.color.fg),
-                'Unexpected rendered component: ' .. rendered_component
+                ctbl.color.fg,
+                'Wrong color in the rendered component: ' .. rendered_component
             )
         end)
 
@@ -145,21 +148,21 @@ describe('A child of the ex.component', function()
             local is_enabled = true
             local Child = require('lualine.ex.component'):extend({
                 color = { fg = 'green' },
-                is_enabled = function()
-                    return is_enabled
-                end,
             })
             function Child:update_status()
                 return 'some_text'
             end
+            function Child:is_enabled()
+                return is_enabled
+            end
             local cmp = Child(u.opts())
 
             -- when:
-            local ctbl_before = u.extract_component(cmp)
+            local ctbl_before = u.match_component(cmp)
             is_enabled = false
-            local ctbl_disabled = u.extract_component(cmp)
+            local ctbl_disabled = u.match_component(cmp)
             is_enabled = true
-            local ctbl_after = u.extract_component(cmp)
+            local ctbl_after = u.match_component(cmp)
 
             -- then:
             eq(ctbl_before.hl, ctbl_after.hl)
