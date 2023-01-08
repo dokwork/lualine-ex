@@ -73,7 +73,7 @@ sections = {
 
 ### ex.lsp.all
 
-[demo](https://asciinema.org/a/Bv2pb3BDDwaM71T426cteg9Jk)
+[demo](https://asciinema.org/a/rHyolfVFs5Nn2oRUS7TaUAjvm)
 
 This component provides information about status of all run LSP servers. Every server has its own
 color and icon, which can be taken from the option `icons` or plugin `nvim-wev-devicons` (if it's
