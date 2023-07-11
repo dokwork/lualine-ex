@@ -28,6 +28,7 @@ describe('ex.git.branch component', function()
 
         it('should be disabled', function()
             local c = l.init_component(component_name)
+            ---@cast c ExComponent
             eq(false, c:is_enabled())
         end)
 
@@ -59,6 +60,7 @@ describe('ex.git.branch component', function()
 
         it('should be enabled', function()
             local c = l.init_component(component_name)
+            ---@cast c ExComponent
             eq(true, c:is_enabled())
         end)
 
