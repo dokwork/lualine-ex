@@ -15,6 +15,8 @@ local log = require('plenary.log').new({ plugin = 'ex.component' })
 ---@field self ExComponent
 ---@field default_options table
 ---@field options ExComponentOptions
+---@field is_enabled fun(self: ExComponent): boolean
+
 local Ex = require('lualine.component'):extend()
 
 function Ex:extend(default_options)
@@ -37,12 +39,10 @@ function Ex:init(options)
 end
 
 ---Initialization hook. It's run before {Ex.super.init}.
----@param options table The {ExComponentOptions} merged with {default_options}.
 ---@protected
 function Ex:pre_init() end
 
 ---Initialization hook. It's run right after {Ex.super.init}.
----@param options table The {ExComponentOptions} merged with {default_options}.
 ---@protected
 function Ex:post_init() end
 

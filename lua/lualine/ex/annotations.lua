@@ -58,6 +58,9 @@
 ---@field component_name string
 ---@field color_highlight HighlightToken
 ---@field icon_color_highlight HighlightToken
+---@field __enabled_hl HighlightToken
+---@field __enabled_icon_hl HighlightToken
+---@field __disabled_hl HighlightToken
 
 ---@class LualineComponentOptions: LualineComponentPrivateOptions | LualineComponentPublicOptions
 
@@ -67,11 +70,11 @@
 ---@field status string
 ---@field options LualineComponentOptions
 ---@field default_hl HighlightToken
----@field init fun(options: LualineComponentOptions)
----@field create_option_highlights fun()
----@field create_hl fun(color: table|string|function, hint?: string): HighlightToken
----@field update_status fun(is_focused: boolean)
----@field draw fun(default_highlight: string, is_focused: boolean): string
+---@field init fun(self: LualineComponent, options: LualineComponentOptions)
+---@field create_option_highlights fun(self: LualineComponent)
+---@field create_hl fun(self: LualineComponent, color: table|string|function, hint?: string): HighlightToken
+---@field update_status fun(self: LualineComponent, is_focused: boolean?)
+---@field draw fun(self: LualineComponent, default_highlight: string, is_focused: boolean): string
 ---@field apply_icon fun()
 ---@field apply_padding fun()
 ---@field apply_on_click fun()
