@@ -70,6 +70,13 @@ describe('ex.git.branch component', function()
             eq('main', c:update_status())
         end)
 
+        it('should escape % symbols in a name of the current branch', function()
+            local branch = '%branch'
+            git:new_branch(branch)
+            local c = l.init_component(component_name)
+            eq('%' .. branch, c:update_status())
+        end)
+
         it('a rendered component should have the branch name and the icon', function()
             git:checkout('main')
             local rendered_component = l.render_component(component_name)

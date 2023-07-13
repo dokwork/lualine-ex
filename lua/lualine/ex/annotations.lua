@@ -5,8 +5,8 @@
 ---@alias StatuslineHighlight string # `%#<HighlightGroup>#`
 
 ---@class Color # Highlight definition map. See :help nvim_set_hl
----@field fg Color
----@field bg Color
+---@field fg RGB
+---@field bg RGB
 
 ---@class HighlightToken # any table identifier received from create_hl or create_component_highlight_group
 ---@field name HighlightGroup
