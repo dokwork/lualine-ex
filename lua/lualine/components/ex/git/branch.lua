@@ -76,7 +76,8 @@ function GitBranch:is_enabled()
 end
 
 function GitBranch:update_status()
-    return self.git():get_branch() or ''
+    local branch_name = self.git():get_branch()
+    return branch_name and branch_name:gsub('%%', '%%%%') or ''
 end
 
 return GitBranch

@@ -59,12 +59,30 @@ describe('inside a git worktree', function()
         eq(git_root, p:git_root())
     end)
 
+    it('read_git_branch should return the name of the current git branch', function()
+        local p = GitProvider:new(git_root)
+        eq('main', p:read_git_branch())
+    end)
+
+    it('read_git_branch should return the name of the new git branch', function()
+        local p = GitProvider:new(git_root)
+        -- when:
+        git:new_branch('new_branch')
+        -- then:
+        local head = fs.path(git_root, '.git', 'HEAD')
+        eq(
+            'new_branch',
+            p:read_git_branch(),
+            string.format('Content of the %s:\n%s', head, fs.read(head))
+        )
+    end)
+
     it('get_branch should return the name of the current git branch', function()
         local p = GitProvider:new(git_root)
         eq('main', p:get_branch())
     end)
 
-    -- FIXME: find a reason why this test fails
+    -- FIXME: find a reason why this test fails. It looks like event about HEAD changes is loosing.
     t.ignore_it('get_branch should return the name of the new git branch', function()
         local p = GitProvider:new(git_root)
         eq('main', p:get_branch())

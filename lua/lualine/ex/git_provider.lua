@@ -1,3 +1,8 @@
+---Provides utils to find the current working directory and the name of git branch.
+---@class GitProvider: Object
+---@field new fun(git_root_path: string): GitProvider Creates a new {Git} provider instance around {git_root_path}.
+local Git = require('lualine.utils.class'):extend()
+
 local fs = vim.fs
 local fn = vim.fn
 local uv = vim.loop
@@ -24,11 +29,6 @@ local function read(file_path)
     f:close()
     return content
 end
-
----@class GitProvider: Object
----@field new fun(git_root_path: string): GitProvider
---- Creates a new {Git} provider instance around {git_root_path}.
-local Git = require('lualine.utils.class'):extend()
 
 ---This static method looks for the path with `.git/` directory outside the {path}.
 ---@param path string The path to the directory or file, from which the search of
@@ -74,15 +74,16 @@ end
 ---Reads '{git_root}/.git/HEAD' file and gets the name of the current git branch, or the first 7
 ---symbols of the commit sha.
 ---@return string # The name of the current branch or first 7 symbols of the commit's hash.
-function Git:__read_git_branch()
+function Git:read_git_branch()
     local path = make_path(self:git_root(), '.git', 'HEAD')
     local head = read(path)
     log.fmt_debug('Read a name of the git branch. Content of the %s:\n%s', path, head)
+    local name_pattern = '(%S+)'
     local branch = head
         and (
-            string.match(head, 'ref: refs/heads/(%w+)')
-            or string.match(head, 'ref: refs/tags/(%w+)')
-            or string.match(head, 'ref: refs/remotes/(%w+)')
+            string.match(head, 'ref: refs/heads/' .. name_pattern)
+            or string.match(head, 'ref: refs/tags/' .. name_pattern)
+            or string.match(head, 'ref: refs/remotes/' .. name_pattern)
         )
     return branch or (head and head:sub(1, #head - 7))
 end
@@ -92,6 +93,8 @@ function Git:git_root()
     return self.__git_root, self.__git_root_err
 end
 
+---Returns a name of the current git branch. The result of this function changes only when
+---HEAD file was changed.
 function Git:get_branch()
     -- git root was not found
     if not self.__git_root then
@@ -104,7 +107,7 @@ function Git:get_branch()
     end
 
     -- read the name of the current branch
-    self.__git_branch = self:__read_git_branch()
+    self.__git_branch = self:read_git_branch()
 
     -- run poll of HEAD's changes
     self:__poll_head(make_path(self:git_root(), '.git', 'HEAD'))
@@ -113,18 +116,19 @@ function Git:get_branch()
 end
 
 function Git:__poll_head(path)
-    local is_windows = sep == [[\]]
-    self.__poll_event = self.__poll_event or (is_windows and uv.new_fs_poll() or uv.new_fs_event())
-    log.fmt_debug('Start %s for %s', is_windows and 'fs_poll' or 'fs_event', path)
+    local is_os_windows = sep == [[\]]
+    self.__poll_event = self.__poll_event
+        or (is_os_windows and uv.new_fs_poll() or uv.new_fs_event())
+    log.fmt_debug('Start %s for %s', is_os_windows and 'fs_poll' or 'fs_event', path)
     self.__poll_event:start(
         path,
-        is_windows and 1000 or {},
+        is_os_windows and 1000 or {},
         vim.schedule_wrap(function(err, filename, event)
             if err then
                 log.fmt_warn('Error happened on polling %s: %s', filename, err)
             else
                 log.fmt_debug('New update for %s: %s', filename, event)
-                self.__git_branch = self:__read_git_branch()
+                self.__git_branch = self:read_git_branch()
             end
             self.__poll_event:stop()
             self:__poll_head(path)
