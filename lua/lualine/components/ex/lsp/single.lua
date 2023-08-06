@@ -41,7 +41,8 @@ local function lsp_client_icon(client, icons)
     end
     -- or looking for it in the nvim-web-devicons
     icons = devicons()
-    for _, ft in ipairs(client.config.filetypes) do
+    local fts = client.config.filetypes or { vim.bo.filetype }
+    for _, ft in ipairs(fts) do
         if icons[ft] then
             dev_icon = icons[ft]
             local icon = { dev_icon.icon }
