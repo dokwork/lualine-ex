@@ -1,10 +1,9 @@
 local Spell = require('lualine.ex.component'):extend({
     icon = '暈',
+    is_enabled = function()
+        return vim.o.spell
+    end,
 })
-
-function Spell:is_enabled()
-    return vim.o.spell
-end
 
 function Spell:update_status()
     if vim.o.spell then

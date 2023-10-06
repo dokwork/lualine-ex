@@ -14,7 +14,13 @@ end
 ---@class AllLspComponent: ExComponent
 ---@field options AllLspOptions
 ---@field components table
-local AllLsp = require('lualine.ex.component'):extend(SingleLsp.default_options)
+local AllLsp = require('lualine.ex.component'):extend(
+    vim.tbl_extend('force', SingleLsp.default_options, {
+        is_enabled = function(component)
+            return not ex.is_empty(component:__clients())
+        end,
+    })
+)
 
 ---@protected
 function AllLsp:pre_init()
@@ -22,10 +28,6 @@ function AllLsp:pre_init()
     self.components = {}
     -- will be used to avoid duplicate highlights:
     self.__hls_cache = {}
-end
-
-function AllLsp:is_enabled()
-    return not ex.is_empty(self:__clients())
 end
 
 ---@private

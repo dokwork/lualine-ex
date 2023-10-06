@@ -3,9 +3,10 @@ local ex = require('lualine.ex')
 local log = require('plenary.log').new({ plugin = 'ex.component' })
 
 ---@class ExComponentOptions: LualineComponentOptions
----@field always_show_icon boolean True means that icon should be shown even for inactive component.
+---@field always_show_icon boolean `true` means that icon should be shown even for inactive component.
 ---@field disabled_color Color
 ---@field disabled_icon_color Color
+---@field is_enabled fun(component: ExComponent): boolean `true` means component enabled and must be shown. Disabled component has only icon with
 ---@field hls_cache? table
 
 ---@class ExComponent: LualineComponent The extension of the {LualineComponent}
@@ -15,7 +16,6 @@ local log = require('plenary.log').new({ plugin = 'ex.component' })
 ---@field self ExComponent
 ---@field default_options table
 ---@field options ExComponentOptions
----@field is_enabled fun(self: ExComponent): boolean
 
 local Ex = require('lualine.component'):extend()
 
@@ -106,10 +106,14 @@ function Ex:create_option_disabled_highlights()
         or self.options.__disabled_hl
 end
 
----`true` means component enabled and must be shown. Disabled component has only icon with
---- {options.disabled_color}.
+---@protected
+---@final
 function Ex:is_enabled()
-    return true
+    if self.options.is_enabled ~= nil and type(self.options.is_enabled) == 'function' then
+        return self.options.is_enabled(self)
+    else
+        return true
+    end
 end
 
 --- Disable component should have disabled color

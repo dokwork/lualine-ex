@@ -85,6 +85,9 @@ local Lsp = require('lualine.ex.component'):extend({
         unknown = '?',
         lsp_is_off = 'ﮤ',
     },
+    is_enabled = function(component)
+        return is_lsp_client_active(component.client)
+    end,
 })
 
 ---@protected
@@ -115,10 +118,6 @@ function Lsp:__get_color_from_icon_wrap()
             return type(icon) == 'table' and icon.color
         end
     end
-end
-
-function Lsp:is_enabled()
-    return is_lsp_client_active(self.client)
 end
 
 ---@protected

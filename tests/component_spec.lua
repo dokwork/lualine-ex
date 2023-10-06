@@ -60,12 +60,12 @@ describe('A child of the ex.component', function()
             -- given:
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
+                is_enabled = function()
+                    return false
+                end,
             })
             function Child:update_status()
                 return ''
-            end
-            function Child:is_enabled()
-                return false
             end
             local cmp = Child(u.opts())
 
@@ -82,12 +82,12 @@ describe('A child of the ex.component', function()
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
                 always_show_icon = false,
+                is_enabled = function()
+                    return false
+                end,
             })
             function Child:update_status()
                 return ''
-            end
-            function Child:is_enabled()
-                return false
             end
             local cmp = Child(u.opts())
 
