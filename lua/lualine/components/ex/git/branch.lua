@@ -14,6 +14,9 @@ local default_options = {
         changed = { fg = 'orange' },
         commited = { fg = 'green' },
     },
+    is_enabled = function(component)
+        return component.git():git_root() ~= nil
+    end,
 }
 
 ---Singleton instance for any non git paths
@@ -69,10 +72,6 @@ function GitBranch:post_init()
         end
         return git_providers[git_root]
     end
-end
-
-function GitBranch:is_enabled()
-    return self.git():git_root() ~= nil
 end
 
 function GitBranch:update_status()

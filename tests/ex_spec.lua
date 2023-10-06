@@ -11,6 +11,15 @@ describe('extend', function()
         same({ a = 'a', b = 'b' }, ex.extend(a, b))
     end)
 
+    it('should not change original table', function()
+        local a = { a = 'a' }
+        local b = { b = 'b' }
+
+        ex.extend(a, b)
+
+        same({ a = 'a' }, a)
+    end)
+
     it('should not override existed keys', function()
         local a = { a = 'a' }
         local b = { a = 'b' }
