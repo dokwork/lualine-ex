@@ -76,51 +76,79 @@ end
 ---@param opts table inside information about component's options.
 ---@return ComponentTable # matched component.
 function M.match_rendered_component(rendered_component, opts)
+    local default_hl = opts and opts.hl or M.opts(opts).hl
     local is_right_icon = opts and opts.icon and opts.icon.align == 'right'
     local p_hl = '%%#([%w_]+)#'
     local p_icon = '(%S+)'
     local p_value = '(.*)'
     local p_padding = '%s*'
     local t = {}
-    -- try to match component with a special color for the icon
-    if is_right_icon then
-        t.hl, t.value, t.icon_hl, t.icon = string.match(
-            rendered_component,
-            p_hl .. p_hl .. p_value .. p_hl .. p_padding .. p_value .. p_padding
-        )
-    else
-        _, t.icon_hl, t.icon, t.hl, t.value = string.match(
-            rendered_component,
-            p_hl .. p_hl .. p_value .. p_hl .. p_padding .. p_value .. p_padding
-        )
-    end
-    if t.icon_hl then
+
+    -- Try match the full pattern with both colors
+    local _, hl1, value1, hl2, value2 = string.match(
+        rendered_component,
+        p_hl .. p_hl .. p_value .. p_hl .. p_padding .. p_value .. '$'
+    )
+    -- if the full pattern was matched
+    if value2 then
+        if is_right_icon then
+            t.hl = hl1
+            t.value = value1
+            t.icon_hl = hl2
+            t.icon = value2
+        else
+            t.icon_hl = hl1
+            t.icon = value1
+            t.hl = hl2
+            t.value = value2
+        end
+        t.color = { fg = M.get_gui_color(t.hl, 'fg#'), bg = M.get_gui_color(t.hl, 'bg#') }
         t.icon_color = {
             fg = M.get_gui_color(t.icon_hl, 'fg#'),
             bg = M.get_gui_color(t.icon_hl, 'bg#'),
         }
+        return t
     end
-    -- or try to match a component with one color
-    if not t.icon_hl then
-        t.hl, t.value = string.match(rendered_component, p_hl .. p_padding .. p_value)
-    end
-    if t.hl then
-        t.color = { fg = M.get_gui_color(t.hl, 'fg#'), bg = M.get_gui_color(t.hl, 'bg#') }
+
+    -- Try to match the short pattern with icon color only
+    if is_right_icon then
+        t.value, t.icon_hl, t.icon = string.match(
+            rendered_component,
+            p_value .. p_padding .. p_hl .. p_icon .. '$'
+        )
+        t.hl = default_hl
+        t.icon_color = {
+            fg = M.get_gui_color(t.icon_hl, 'fg#'),
+            bg = M.get_gui_color(t.icon_hl, 'bg#'),
+        }
     else
-        -- the last option is a component without colors
-        t.value = rendered_component
+        t.icon_hl, t.icon, t.value = string.match(
+            rendered_component,
+            p_hl .. p_icon .. p_padding .. p_value
+        )
+        t.icon_color = {
+            fg = M.get_gui_color(t.icon_hl, 'fg#'),
+            bg = M.get_gui_color(t.icon_hl, 'bg#'),
+        }
+        t.hl = t.icon_hl
+        t.color = t.icon_color
     end
-    -- now, we can try to separate the icon and the value
-    if not t.icon then
-        local value, icon
-        if is_right_icon then
-            value, icon = string.match(t.value, p_value .. p_padding .. p_icon)
-        else
-            icon, value = string.match(t.value, p_icon .. p_padding .. p_value)
-        end
-        t.icon = icon
-        t.value = value or t.value
+    if t.icon_hl then
+        return t
     end
+
+    -- Try to match the pattern without colors
+    if is_right_icon then
+        t.value, t.icon = string.match(rendered_component, p_value .. p_icon)
+    else
+        t.icon, t.value = string.match(rendered_component, p_icon .. p_padding .. p_value .. '$')
+    end
+    if t.value then
+        return t
+    end
+
+    -- the last option is a component without colors
+    t.value = rendered_component
     return t
 end
 
