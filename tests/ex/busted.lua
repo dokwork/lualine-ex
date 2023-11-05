@@ -41,4 +41,11 @@ function M.eventually(test, timeout_sec)
     end
 end
 
+function M.withClue(clue, test)
+    local ok, err = pcall(test)
+    if not ok then
+        error(string.format('Clue: %s; Error: %s', clue, err))
+    end
+end
+
 return M
