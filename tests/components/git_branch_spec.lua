@@ -81,7 +81,7 @@ describe('ex.git.branch component', function()
             git:checkout('main')
             local rendered_component = l.render_component(component_name)
             local ctbl = l.match_rendered_component(rendered_component)
-            eq(' ', ctbl.icon, 'Wrong icon in: ' .. rendered_component)
+            eq('', ctbl.icon, 'Wrong icon in: ' .. rendered_component)
             eq('main', ctbl.value, 'Wrong value in: ' .. rendered_component)
         end)
 
