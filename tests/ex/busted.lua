@@ -44,7 +44,7 @@ end
 function M.withClue(clue, test)
     local ok, err = pcall(test)
     if not ok then
-        error(string.format('Clue: %s; Error: %s', clue, err))
+        error(string.format('Clue: [%s] Error: %s', clue, err))
     end
 end
 
