@@ -89,6 +89,12 @@ sections = {
 }
 ```
 
+### ex.relative_filepath
+
+| File inside `cwd` | File outside `cwd` | File outside `cwd`, but inside `$HOME` |
+| :---: | :---: | :---: |
+|  |  |  |
+
 ### ex.git.branch
 
 | No git worktree | Worktree is commited | Worktree is changed |

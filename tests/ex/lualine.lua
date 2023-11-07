@@ -80,7 +80,7 @@ function M.match_rendered_component(rendered_component, opts)
     local is_right_icon = opts and opts.icon and opts.icon.align == 'right'
     local p_hl = '%%#([%w_]+)#'
     local p_icon = '(%S+)'
-    local p_value = '(.*)'
+    local p_value = (opts and opts.draw_empty) and '(.*)' or '(.+)'
     local p_padding = '%s*'
     local t = {}
 
@@ -143,11 +143,12 @@ function M.match_rendered_component(rendered_component, opts)
     else
         t.icon, t.value = string.match(rendered_component, p_icon .. p_padding .. p_value .. '$')
     end
-    if t.value then
+
+    if t.value and #t.value > 1 then
         return t
     end
 
-    -- the last option is a component without colors
+    -- It looks like the whole component is a value
     t.value = rendered_component
     return t
 end
@@ -171,6 +172,25 @@ end
 function M.match_component(component, opts)
     local rendered_component = M.render_component(component, opts)
     return M.match_rendered_component(rendered_component)
+end
+
+--- Runs test with matched component.
+function M.test_matched_component(component_name, optsOrTest, test)
+    local opts = (type(optsOrTest) == 'table') and optsOrTest
+    local test = (type(optsOrTest) == 'function') and optsOrTest or test
+    local rc = M.render_component(component_name, opts)
+    local ct = M.match_rendered_component(rc, opts)
+    local ok, err = pcall(test, ct)
+    if not ok then
+        local msg = string.format(
+            'Error with component [%s]: %s\n\nMatched component:\n%s',
+            rc,
+            err,
+            vim.inspect(ct)
+        )
+        msg = opts and msg .. '\n\nComponent options:\n' .. vim.inspect(opts) or msg
+        error(msg)
+    end
 end
 
 return M
