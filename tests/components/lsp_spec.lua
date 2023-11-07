@@ -4,6 +4,7 @@ local mock = require('luassert.mock')
 local devicons = require('nvim-web-devicons').get_icons()
 
 local eq = assert.are.equal
+local assert_blank = assert.is_blank
 local same = assert.are.same
 
 local lua_lsp = {
@@ -63,10 +64,11 @@ describe('ex.lsp.single component', function()
             -- when:
             local rc = l.render_component(component_name)
             local ctbl = l.match_rendered_component(rc)
-            -- then:
-            eq(lua_lsp.name, ctbl.value, 'Wrong name in the rendered component: ' .. rc)
-            eq(lua_icon.icon, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
-            eq(lua_icon.color, ctbl.color.fg, 'Wrong color in the rendered component: ' .. rc)
+            l.test_matched_component(component_name, function(ctbl)
+                eq(lua_lsp.name, ctbl.value, 'Wrong value in the rendered component.')
+                eq(lua_icon.icon, ctbl.icon, 'Wrong icon in the rendered component.')
+                eq(lua_icon.color, ctbl.color.fg, 'Wrong color in the rendered component.')
+            end)
         end)
 
         it('should have the disabled color when the client is not active', function()
@@ -74,13 +76,12 @@ describe('ex.lsp.single component', function()
             vim.mock.lsp.get_active_clients.returns({ lua_lsp })
             -- make the component inactive:
             vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') + 1 })
-            -- when:
-            local rc = l.render_component(component_name, opts)
-            local ctbl = l.match_rendered_component(rc)
-            -- then:
-            eq(opts.disabled_color.fg, ctbl.color.fg)
-            eq(lua_lsp.name, ctbl.value, 'Wrong name in the rendered component: ' .. rc)
-            eq(lua_icon.icon, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
+
+            l.test_matched_component(component_name, opts, function(ctbl)
+                eq(opts.disabled_color.fg, ctbl.color.fg)
+                eq(lua_lsp.name, ctbl.value, 'Wrong value in the rendered component.')
+                eq(lua_icon.icon, ctbl.icon, 'Wrong icon in the rendered component.')
+            end)
         end)
 
         it(
@@ -94,11 +95,10 @@ describe('ex.lsp.single component', function()
                 vim.mock.lsp.get_active_clients.returns({ unknown_lsp })
                 vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') })
                 local opts = l.opts()
-                -- when:
-                local rc = l.render_component(component_name, opts)
-                local ctbl = l.match_rendered_component(rc)
-                -- then:
-                eq(opts.icons.unknown, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
+
+                l.test_matched_component(component_name, opts, function(ctbl)
+                    eq(opts.icons.unknown, ctbl.icon, 'Wrong icon in the rendered component.')
+                end)
             end
         )
 
@@ -111,13 +111,12 @@ describe('ex.lsp.single component', function()
                 })
                 vim.mock.lsp.get_active_clients.returns({})
                 vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') })
-                -- when:
-                local rc = l.render_component(component_name, opts)
-                local ctbl = l.match_rendered_component(rc)
-                -- then:
-                eq(opts.disabled_color.fg, ctbl.color.fg)
-                eq('', ctbl.value, 'Wrong name in the rendered component: ' .. rc)
-                eq(opts.icons.lsp_is_off, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
+
+                l.test_matched_component(component_name, opts, function(ctbl)
+                    eq(opts.disabled_color.fg, ctbl.color.fg)
+                    assert_blank(ctbl.value, 'Wrong name in the rendered component.')
+                    eq(opts.icons.lsp_is_off, ctbl.icon, 'Wrong icon in the rendered component.')
+                end)
             end
         )
 
@@ -127,21 +126,19 @@ describe('ex.lsp.single component', function()
             vim.mock.lsp.get_active_clients.returns({ lua_lsp })
             vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') })
 
-            local rc = l.render_component(lsp)
-            local ctbl = l.match_component(lsp)
-            eq(lua_lsp.name, ctbl.value, 'Wrong name in the rendered component: ' .. rc)
-            eq(lua_icon.icon, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
-            eq(lua_icon.color, ctbl.color.fg, 'Wrong color in the rendered component: ' .. rc)
+            l.test_matched_component(component_name, function(ctbl)
+                eq(lua_lsp.name, ctbl.value, 'Wrong name in the rendered component.')
+                eq(lua_icon.icon, ctbl.icon, 'Wrong icon in the rendered component.')
+                eq(lua_icon.color, ctbl.color.fg, 'Wrong color in the rendered component.')
+            end)
 
-            -- when:
             vim.mock.lsp.get_active_clients.returns({ vim_lsp })
-            rc = l.render_component(lsp)
-            ctbl = l.match_rendered_component(rc)
 
-            --then:
-            eq(vim_lsp.name, ctbl.value, 'Wrong name in the rendered component: ' .. rc)
-            eq(vim_icon.icon, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
-            eq(vim_icon.color, ctbl.color.fg, 'Wrong color in the rendered component: ' .. rc)
+            l.test_matched_component(component_name, function(ctbl)
+                eq(vim_lsp.name, ctbl.value, 'Wrong name in the rendered component.')
+                eq(vim_icon.icon, ctbl.icon, 'Wrong icon in the rendered component.')
+                eq(vim_icon.color, ctbl.color.fg, 'Wrong color in the rendered component.')
+            end)
         end)
 
         it('should not create highlight for the different client with the same name', function()
@@ -165,16 +162,13 @@ describe('ex.lsp.single component', function()
             -- given:
             local lsp = l.init_component(component_name, l.opts({ client = vim_lsp }))
             vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') })
-
-            -- when:
             vim.mock.lsp.get_active_clients.returns({ lua_lsp })
-            local rc = l.render_component(lsp)
-            local ctbl = l.match_component(lsp)
 
-            --then:
-            eq(vim_lsp.name, ctbl.value, 'Wrong name in the rendered component: ' .. rc)
-            eq(vim_icon.icon, ctbl.icon, 'Wrong icon in the rendered component: ' .. rc)
-            eq(vim_icon.color, ctbl.color.fg, 'Wrong color in the rendered component: ' .. rc)
+            l.test_matched_component(lsp, function(ctbl)
+                eq(vim_lsp.name, ctbl.value, 'Wrong name in the rendered component.')
+                eq(vim_icon.icon, ctbl.icon, 'Wrong icon in the rendered component.')
+                eq(vim_icon.color, ctbl.color.fg, 'Wrong color in the rendered component.')
+            end)
         end)
     end)
 end)

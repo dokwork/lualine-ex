@@ -1,11 +1,22 @@
 ---@diagnostic disable: lowercase-global
 local M = {}
 
+assert.is_blank = function(str, msg)
+    if type(str) == 'string' then
+        if string.gmatch(str, '^%s*$') then
+            return
+        else
+            error(string.format('The string "%s" is not blank.%s', str, msg or ''))
+        end
+    end
+    error(string.format('The {str} has wrong type %s instead of "string".%s', type(str), msg or ''))
+end
+
 function M.ignore_it(desc, fun, reason)
     print('!!!IGNORED!!!', desc, '\nReason: ', reason or '')
 end
 
-function M.except_it(desc, fun)
+function M.it(desc, fun)
     require('plenary.busted').it(desc, fun)
 end
 
@@ -41,7 +52,7 @@ function M.eventually(test, timeout_sec)
     end
 end
 
-function M.withClue(clue, test)
+function M.with_clue(clue, test)
     local ok, err = pcall(test)
     if not ok then
         error(string.format('Clue: [%s] Error: %s', clue, err))
