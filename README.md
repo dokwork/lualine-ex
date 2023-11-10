@@ -5,9 +5,11 @@
 This is a [plugin](https://github.com/nvim-lualine/lualine.nvim/wiki/Plugins) 
 for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) 
 with additional [components](#provided-components), and an extended class of the `lualine.component` with
-[additional functionality](ExComponent.md).
+additional functionality (see [ExComponent.md](ExComponent.md)).
 
 ## Installation
+
+This is not a plugin for vim. So, it's reasonable to install it as dependency for `lualine.nvim`.
 
 ### [Lazy](https://github.com/folke/lazy.nvim)
 
@@ -17,7 +19,7 @@ with additional [components](#provided-components), and an extended class of the
     dependencies = { 
       { 'dokwork/lualine-ex' },
       { 'nvim-lua/plenary.nvim' },
-      { 'kyazdani42/nvim-web-devicons', opt = true  },
+      { 'kyazdani42/nvim-web-devicons' },
     }
 }
 ```
@@ -30,21 +32,21 @@ use {
     requires = { 
       { 'dokwork/lualine-ex' },
       { 'nvim-lua/plenary.nvim' },
-      { 'kyazdani42/nvim-web-devicons', opt = true  },
+      { 'kyazdani42/nvim-web-devicons' },
     }
 }
 ```
 
 ## Provided components
 
-_Most of the components use icons from a [patched nerd font](https://www.nerdfonts.com/)._
+_Most of the components use icons from a [patched nerd font](https://www.nerdfonts.com/) by default._
 
 ### ex.spellcheck
 
 `vim.o.spell=true`: &nbsp; <img src="https://github.com/dokwork/lualine-ex/assets/6939832/4064c0c6-42eb-41da-a471-0e4d8a7fc2a8" height=18>
 `vim.o.spell=false`: &nbsp;  <img src="https://github.com/dokwork/lualine-ex/assets/6939832/0943ce1b-c5d9-4982-89f4-2ba26bf90e85" height=18>
 
-The simple component shows an actual status of the `vim.wo.spell` option.
+This simplest component shows an actual status of the `vim.wo.spell` option.
 
 ```lua
 sections = {
@@ -89,11 +91,94 @@ sections = {
 }
 ```
 
-### ex.relative_filepath
+### ex.relative_filename
 
-| File inside `cwd` | File outside `cwd` | File outside `cwd`, but inside `$HOME` |
-| :---: | :---: | :---: |
-|  |  |  |
+This component shows a `filename`: a file name and a path to the current file relative to the
+current working directory, and may be used effectively together with [ex.cwd](#ex.cwd). The
+`filename` has a prefix, which shows a file's place in the file system relative to the `cwd`:
+
+| File path relative to `cwd` | Options | Component example |
+| :---: | :---: | ---: | 
+| inside `cwd`                      | |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/af8ab32f-58f2-4f11-a2aa-6f519095c693" height=18 />|
+| outside `cwd`                     | `external_prefix = "/..."` |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/7ada40a6-19c0-4811-ad59-ba3e08b40c44" height=18 />|
+| outside `cwd`, but inside `$HOME` | |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/71a391aa-fb77-4f1a-88c8-76ed30b3907f" height=18 />|
+
+Some path may be very long and takes significant part in the statusline. It's possible to specify the
+{max_length} of the filename. To achieve that the follow algorithm is used:
+
+- every part of the path is shorten till the {shorten.length} except parts from the {shorten.exclude}
+  list;
+- then the {shorten.length} will be repeatedly decreased until 1 or until the {max_length} will be 
+  achieved;
+- if it's not enough then the {exclude} setting will be ignored and all parts will be shorten;
+- if the result is still longer than {max_length} than only the file name will be used with the prefix
+  {filename_only_prefix}.
+
+Example of the shorten filename with follow options `{ shorten: { length = 3, exclude = { 1 } } }`:
+
+| Space for component enough to show ...| Component example |
+| :--- | ---: |
+| the whole path |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/af8ab32f-58f2-4f11-a2aa-6f519095c693" height=18 />|
+| the path with specified options (`shorten.length` = 3) |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/378bf6e2-0a22-41d2-86de-62dd13292c11" height=18 />|
+| the path with `shorten.length` = 2 |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/61d10458-9dfc-401f-a0a1-2b14111f0e14" height=18 />|
+| the path with `shorten.length` = 1 |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/2553d511-d3bf-42eb-a86e-5b154513d517" height=18 />|
+| the path ignoring `exclude` section |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/8520b046-299d-4668-a08b-cba6f13c1a87" height=18 />|
+| only the file name |<img src = "https://github.com/dokwork/lualine-ex/assets/6939832/f26b9d9d-417e-4984-a1cb-077dce4cfdfd" height=18 />|
+
+The {max_length} may be a number, or a function which receives the current component value and
+returns a number:
+ - Every value less than 0 means that the filename never should be shorten;
+ - Zero means that filename should be always shorten;
+ - A value more or equal to 1 represents a length, after which the filename should be shorten;
+ - A value between 0 and 1 represents a fraction of the current window width if the {laststatus} == 2, 
+   or a fraction of the terminal width.
+
+**Default configuration:**
+```lua
+{
+    -- The prefix which is used when the current file is outside cwd
+    external_prefix = nil,
+
+    -- The prefix which is used when the length of the filename after shorten
+    -- is longer than {max_length}
+    filename_only_prefix = '…/',
+
+    -- The max length of the component value.
+    -- < 0          - never shorten; 
+    -- 0            - always shorten; 
+    -- > 0 and  < 1 - shorten when longer than {max_length} * {vim.o.columns} 
+    --                for {laststatus} == 3;
+    --                and shorten when longer than 
+    --                {max_length} * {vim.api.nvim_win_get_width(0)} overwise; 
+    -- >= 1         - shorten when longer then N symbols;
+    max_length = 0.3,
+
+    -- The configuration of the shorten algorithm.
+    shorten = { 
+        -- The count of letters, which will be taken from every part of the path
+        lenght = 5, 
+        -- The list of indexes of filename parts, which should not be shorten at all
+        -- (the file name { -1 } is always excluded)
+        exclude = nil 
+    },
+}
+```
+
+_`ex.relative_filename` component doesn't provide options to show file states, because it easily
+possible to do with standard approach:_
+
+```lua
+-- readonly mode indicator example:
+{
+    '%{""}',
+    draw_empty = true,
+    icon = { '' },
+    cond = function()
+        return not vim.bo.modifiable
+    end,
+}
+```
+
 
 ### ex.git.branch
 
@@ -229,6 +314,3 @@ sections = {
   }
 }
 ```
-
-
-
