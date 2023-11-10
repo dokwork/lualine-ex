@@ -22,10 +22,25 @@ lspconfig.vimls.setup({
 })
 
 -- choose ex component for demo:
-local demo_component = vim.env.component or 'ex.cwd'
+local demo_component = { vim.env.component or 'ex.cwd' }
+if vim.env.component_opts then
+    local ok, demo_options = pcall(vim.json.decode, vim.env.component_opts)
+    if not ok then
+        error(
+            string.format(
+                'Wrong value of the component_opts=%s. It should be a valid json object. Error:\n%s',
+                vim.env.component_opts,
+                vim.inspect(err)
+            )
+        )
+    end
+    if type(demo_options) == 'table' then
+        demo_component = vim.tbl_extend('keep', demo_component, demo_options)
+    end
+end
 
 local function demo_component_name()
-    return string.format("This is a demo of the '%s' component:", demo_component)
+    return string.format("This is a demo of the '%s' component:", demo_component[1])
 end
 
 -- setup statusline with ex component:

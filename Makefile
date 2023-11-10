@@ -31,12 +31,18 @@ You can run separate test file or tests from a subdirectory passing 'only' param
 > make test only=components/git_branch_spec.lua
 or
 > make test only=components
-\nTo turn on debug logs use 'DEBUG_PLENARY' with minimal log level or `true`:
+
+To turn on debug logs use 'DEBUG_PLENARY' with minimal log level or `true`:
 > make test DEBUG_PLENARY=true
-\nTo try the specific component in demo you can specify its name:
-> make demo component=ex.lsp.all
-\nYou can pass any argument to the demo task. For example,it can be a path to file which should be opened:
-> make demo path=<path to file>
+
+To try the specific component in demo you can specify its name:
+> make demo component=ex.cwd
+
+You can pass a path to file which should be opened in demo:
+> make demo component=ex.cwd path=<path to file>
+
+Also, you can pass custom options to the demo component as a json:
+> make demo component=ex.cwd component_opts='{ "depth": 1 }'
 
 endef
 
