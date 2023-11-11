@@ -37,6 +37,21 @@ use {
 }
 ```
 
+## New common component options
+
+```lua
+{
+    -- A function or boolean to check is the component enabled or not:
+    is_enabled = true
+
+    -- A color for the disabled component:
+    disabled_color = { fg = 'grey' }
+
+    -- A color for the icon of the disabled component:
+    disabled_icon_color = { fg = 'grey' }
+}
+```
+
 ## Provided components
 
 _Most of the components use icons from a [patched nerd font](https://www.nerdfonts.com/) by default._
@@ -59,9 +74,6 @@ sections = {
 
       -- The color for the icon of the disabled component:
       disabled_icon_color = { fg = 'grey' }
-
-      -- The `true` means that the icon must be shown even in case when component is empty:
-      always_show_icon = true
     }
   }
 }
@@ -81,21 +93,34 @@ sections = {
     {
       'ex.cwd',
       
-      -- count of directories from the current working path:
+      -- The count of directories from the current working path, if > 0 then parts will be taken from
+      -- the end of the path, or from the start if {depth} < 0:
       depth = 2,
 
-      -- the prefix which should be used when {depth} less than directories at all:
+      -- The prefix which should be used when {depth} great than 0 and less than directories in the
+      -- path:
       prefix = '…'
+
+      -- The count of symbols in the `cwd` after which the reduction algorith will be applied:
+      -- if it > 0 and < 1 then it will be calculated as {max_length} * {vim.o.columns} for 
+      -- {laststatus} == 3; and {max_length} * {vim.api.nvim_win_get_width(0)} for {laststatus} ~= 3; 
+      max_length = 0.2
     }
   }
 }
 ```
 
+**Reduction algorithm**
+
+The absolute value of the {depth} will be decreased until the length of the path become less then
+{max_length}.
+
+
 ### ex.relative_filename
 
 This component shows a `filename`: a file name and a path to the current file relative to the
-current working directory, and may be used effectively together with [ex.cwd](#ex.cwd). The
-`filename` has a prefix, which shows a file's place in the file system relative to the `cwd`:
+current working directory. The `filename` has a prefix, which shows a file's place in the file
+system relative to the `cwd`:
 
 | File path relative to `cwd` | Options | Component example |
 | :---: | :---: | ---: | 
@@ -219,9 +244,6 @@ sections = {
 
       -- The color for the icon of the disabled component:
       disabled_icon_color = { fg = 'grey' }
-
-      -- The `true` means that the icon must be shown even in case when component is empty:
-      always_show_icon = true
     }
   }
 }
