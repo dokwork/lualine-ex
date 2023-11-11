@@ -45,7 +45,7 @@ local Spell = require('lualine.ex.component'):extend({
     -- An icon for the component
     icon = '⅍',
 
-    -- The function to check is component enabled or not:
+    -- A function or boolean to check is the component enabled or not:
     is_enabled = function(component)
         return vim.wo.spell
     end
@@ -53,7 +53,7 @@ local Spell = require('lualine.ex.component'):extend({
 ```
 
 The `disabled_color` can be specified in the same manner as the `color` for the
-component. The disabled color for whole component and for icon may be specified
+component. The disabled color for the whole component and for the icon may be specified
 separately.
 
 ```lua
@@ -71,16 +71,8 @@ local Spell = require('lualine.ex.component'):extend({
 
     -- The color for the icon of the disabled component:
     disabled_icon_color = { fg = 'grey' }
-
-    -- The `true` means that the icon must be shown
-    -- even if the component is empty:
-    always_show_icon = true
 })
 ```
-
-By default, `lualine` doesn't show an icon if a component is empty, but it
-may be not very useful for disabled components. To show the icon in any cases
-set the property `always_show_icon` to `true`.
 
 ### Render circle
 

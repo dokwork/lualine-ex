@@ -61,7 +61,7 @@ function AllLsp:update_status(is_focused)
                     self = self.options.self,
                     icons = self.options.icons,
                     icons_enabled = self.options.icons_enabled,
-                    always_show_icon = self.options.always_show_icon,
+                    draw_empty = self.options.draw_empty,
                     icons_only = self.options.icons_only,
                     disabled_color = self.options.disabled_color,
                     disabled_icon_color = self.options.disabled_icon_color,

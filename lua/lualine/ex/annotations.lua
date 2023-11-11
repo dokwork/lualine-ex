@@ -52,6 +52,7 @@
 ---@field fmt fun(status: string): string
 ---@field icons_enabled boolean
 ---@field color Color | fun(mode: string): Color
+---@field draw_empty boolean
 
 ---@class LualineComponentPrivateOptions
 ---@field self table
