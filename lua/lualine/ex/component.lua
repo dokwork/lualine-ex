@@ -3,7 +3,6 @@ local ex = require('lualine.ex')
 local log = require('plenary.log').new({ plugin = 'ex.component' })
 
 ---@class ExComponentOptions: LualineComponentOptions
----@field always_show_icon boolean `true` means that icon should be shown even for inactive component.
 ---@field disabled_color Color
 ---@field disabled_icon_color Color
 ---@field is_enabled fun(component: ExComponent): boolean `true` means component enabled and must be shown. Disabled component has only icon with
@@ -22,9 +21,9 @@ local Ex = require('lualine.component'):extend()
 function Ex:extend(default_options)
     local cls = self.super.extend(self)
     cls.default_options = ex.merge(vim.deepcopy(default_options or {}), {
-        always_show_icon = true,
         disabled_color = { fg = 'grey' },
         disabled_icon_color = { fg = 'grey' },
+        draw_empty = true,
     })
     return cls
 end
@@ -109,8 +108,10 @@ end
 ---@protected
 ---@final
 function Ex:is_enabled()
-    if self.options.is_enabled ~= nil and type(self.options.is_enabled) == 'function' then
+    if type(self.options.is_enabled) == 'function' then
         return self.options.is_enabled(self)
+    elseif type(self.options.is_enabled) == 'boolean' then
+        return self.options.is_enabled
     else
         return true
     end
@@ -147,8 +148,7 @@ function Ex:draw(default_highlight, is_focused)
     -- we have two option to turn icon off:
     -- 1. turn off all icons for components
     -- 2. turn off icon for disabled component only
-    local show_icon = self.options.icons_enabled
-        and (self:is_enabled() or self.options.always_show_icon)
+    local show_icon = self.options.icons_enabled and (self:is_enabled() or self.options.draw_empty)
 
     if type(status) == 'string' and (#status > 0 or show_icon) then
         self.status = status

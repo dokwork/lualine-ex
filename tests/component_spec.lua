@@ -77,32 +77,10 @@ describe('A child of the ex.component', function()
             eq('!', ctbl.icon, 'Unexpected icon from rendered component: ' .. rendered_component)
         end)
 
-        it('should not show an icon for the empty component if always_show_icon = false', function()
-            -- given:
-            local Child = require('lualine.ex.component'):extend({
-                icon = '!',
-                always_show_icon = false,
-                is_enabled = function()
-                    return false
-                end,
-            })
-            function Child:update_status()
-                return ''
-            end
-            local cmp = Child(u.opts())
-
-            -- when:
-            local rendered_component = u.render_component(cmp)
-
-            -- then:
-            eq('', rendered_component)
-        end)
-
         it('should not show the component at all if `cond` returns false', function()
             -- given:
             local Child = require('lualine.ex.component'):extend({
                 icon = '!',
-                always_show_icon = true,
                 cond = function()
                     return false
                 end,
