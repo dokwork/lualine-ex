@@ -50,4 +50,29 @@ M.merge = function(dest, source, already_visited)
     return dest
 end
 
+---Resolves a {max_length} option of a component.
+--- - if {opt} is a function, it invokes that function with the {value} parameter;
+--- - if {opt} is number > 0 and < 1, and {laststatus} == 3 then this function
+---   calculates a fraction of the {vim.o.columns};
+--- - if {opt} is number > 0 and < 1, and {laststatus} ~= 3 then this function
+---   calculates a fraction of the {vim.api.nvim_win_get_width(0)};
+--- - all other numbers will be returned as is;
+--- - in case of all other types the nill will be returned.
+---
+---@param opt number|fun(value: string) an initial setting for the max_length.
+---@param value? string an actual component status which will be passed to the {opt}
+---              if it's a function.
+---@return number | nil
+M.max_length = function(opt, value)
+    opt = (type(opt) == 'function') and opt(value) or opt
+    if type(opt) ~= 'number' then
+        return nil
+    end
+    if opt > 0 and opt < 1 then
+        return opt * (vim.o.laststatus == 3 and vim.o.columns or vim.api.nvim_win_get_width(0))
+    else
+        return opt
+    end
+end
+
 return M

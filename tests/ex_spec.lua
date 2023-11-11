@@ -63,3 +63,45 @@ describe('merge', function()
         same({ c = { 'b', a = 'a' } }, ex.merge({ c = a }, { c = b }))
     end)
 end)
+
+describe('max_length', function()
+    local mock = { o = {}, api = {} }
+
+    before_each(function()
+        mock.o.laststatus = vim.o.laststatus
+        mock.o.columns = vim.o.columns
+        mock.api.nvim_win_get_width = vim.api.nvim_win_get_width
+    end)
+
+    after_each(function()
+        vim.o.laststatus = mock.o.laststatus
+        vim.o.columns = mock.o.columns
+        vim.api.nvim_win_get_width = mock.api.nvim_win_get_width
+    end)
+
+    it('should run opts with value', function()
+        local value = 'abcdfg'
+        local opt = function(arg)
+            return #arg
+        end
+        eq(#value, ex.max_length(opt, value))
+    end)
+
+    describe('when vim.o.laststatus is 3', function()
+        vim.o.laststatus = 3
+        it('should be calculated as a fraction of the terminal window', function()
+            vim.o.columns = 100
+            eq(50, ex.max_length(0.5))
+        end)
+    end)
+
+    describe('when vim.o.laststatus is not 3', function()
+        vim.o.laststatus = 2
+        it('should be calculated as a fraction of the terminal window', function()
+            vim.api.nvim_win_get_width = function(wn)
+                return wn == 0 and 50 or nil
+            end
+            eq(25, ex.max_length(0.5))
+        end)
+    end)
+end)

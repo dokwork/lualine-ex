@@ -1,3 +1,5 @@
+local ex = require('lualine.ex')
+
 local M = require('lualine.ex.component'):extend({
     external_prefix = nil,
     filename_only_prefix = '…/',
@@ -24,26 +26,20 @@ function M:update_status()
     local filepath = Path:new(current_file):normalize(vim.fn.getcwd())
     local prefix = (filepath == current_file) and self.options.external_prefix or ''
 
-    local max_length = self.options.max_length
-    max_length = (type(max_length) == 'function') and max_length(filepath) or max_length
-    max_length = (type(max_length) == 'number') and max_length or 0
-
-    if max_length < 0 then
-        return prefix .. filepath
-    end
-
     -- calculate parameters for shorten algorithm
-    if max_length > 0 and max_length < 1 then
-        local width = (vim.o.laststatus == 3) and vim.o.columns or vim.api.nvim_win_get_width(0)
-        max_length = max_length * width
-    end
+    local max_length = ex.max_length(self.options.max_length, filepath) or 0
     local exclude = self.options.shorten.exclude or {}
     if exclude[-1] == nil then
         table.insert(exclude, -1)
     end
     local shorten_length = self.options.shorten.length or 1
 
-    -- just apply user setting and shorten the filepath
+    -- do not short the filename
+    if max_length < 0 then
+        return prefix .. filepath
+    end
+
+    -- just apply user setting and short the filepath
     if max_length == 0 then
         return prefix .. Path:new(filepath):shorten(shorten_length, exclude)
     end
