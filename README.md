@@ -316,11 +316,12 @@ installed).
 When some of already run servers is not active for the current buffer, it is in _disabled_ state.
 The component in _disabled_ state has a color specified in the option `disabled_color`.
 
-If no on lsp client is run, the component shows only `lsp_is_off` icon.
+If no one lsp client is run, the component shows only `lsp_is_off` icon.
+
+You may double click by this component to close all not used lsp clients.
 
 The `ex.lsp.all` component has the same options as the [ex.lsp.single](#exlspsingle) component, 
-with additional option `only_attached`, which can be used to show only attached to the current buffer 
-clients:
+with few additional:
 
 ```lua
 sections = {
@@ -332,6 +333,12 @@ sections = {
 
       -- If true then only clients attached to the current buffer will be shown:
       only_attached = false,
+
+      -- If true then every closed client will be echoed:
+      notify_enabled = true
+      
+      -- A name of highlight group which should be used in echo:
+      notify_hl = 'Comment'
     }
   }
 }

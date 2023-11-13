@@ -1,4 +1,3 @@
-local log = require('plenary.log').new({ plugin = 'ex.lsp.all' })
 local ex = require('lualine.ex')
 local SingleLsp = require('lualine.components.ex.lsp.single')
 
@@ -10,18 +9,20 @@ end
 ---@class AllLspOptions: SingleLspOptions
 ---@field only_attached boolean
 ---@field icons_only boolean
+---@field notify_enabled boolean
+---@field notify_hl HighlightGroup
 
 ---@class AllLspComponent: ExComponent
 ---@field options AllLspOptions
 ---@field components table
-local AllLsp = require('lualine.ex.component'):extend(
-    vim.tbl_extend('force', SingleLsp.default_options, {
+local AllLsp =
+    require('lualine.ex.component'):extend(vim.tbl_extend('force', SingleLsp.default_options, {
         is_enabled = function(component)
             return not ex.is_empty(component:__clients())
         end,
-        on_click = require('lualine.ex.lsp').stop_inactive_clients
-    })
-)
+        notify_enabled = true,
+        notify_hl = 'Comment',
+    }))
 
 ---@protected
 function AllLsp:pre_init()
@@ -29,6 +30,18 @@ function AllLsp:pre_init()
     self.components = {}
     -- will be used to avoid duplicate highlights:
     self.__hls_cache = {}
+    self.options.on_click = self.options.on_click
+        or function(clicks, button, modified)
+            if clicks > 1 then
+                require('lualine.ex.lsp').stop_unused_clients(self.options)
+            elseif self.options.notify_enabled then
+                local msg = {
+                    'Hint: double click to close all not used clients',
+                    self.options.notify_hl or 'Comment',
+                }
+                vim.api.nvim_echo({ msg }, false, {})
+            end
+        end
 end
 
 ---@private
