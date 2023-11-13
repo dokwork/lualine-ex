@@ -1,10 +1,14 @@
 local M = {}
 
-M.stop_inactive_clients = function(opts)
+---Iterates over active lsp clients and stops every client without attached buffers.
+---@param opts table
+---@field notify_enabled boolean true enables echo about every stopped client.
+---@field notify_hl HighlightGroup a name of the highlight which should be used in echo.
+M.stop_unused_clients = function(opts)
     opts = opts or {}
-    local hl = opts.debug_hl or 'Comment'
+    local hl = opts.notify_hl or 'Comment'
     local function notify(msg, ...)
-        if opts.notify_enabled then
+        if opts.notify_enabled == true then
             local arg = { ... }
             msg = string.format('[lualine.ex.lsp] ' .. msg, unpack(arg))
             vim.api.nvim_echo({ { msg, hl } }, true, {})
@@ -19,9 +23,9 @@ M.stop_inactive_clients = function(opts)
         end
     end
     if were_stopped == 0 then
-        notify('No one inactive client')
+        notify('No one unused client')
     else
-        notify('%d clients were stop', were_stopped)
+        notify('%d client%s stopped', were_stopped, (were_stopped > 1) and 's were' or ' was')
     end
 end
 
