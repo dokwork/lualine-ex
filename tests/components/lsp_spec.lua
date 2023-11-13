@@ -61,9 +61,7 @@ describe('ex.lsp.single component', function()
             vim.mock.lsp.get_active_clients.returns({ lua_lsp })
             -- make the component enabled:
             vim.mock.lsp.get_buffers_by_client_id.returns({ vim.fn.bufnr('%') })
-            -- when:
-            local rc = l.render_component(component_name)
-            local ctbl = l.match_rendered_component(rc)
+
             l.test_matched_component(component_name, function(ctbl)
                 eq(lua_lsp.name, ctbl.value, 'Wrong value in the rendered component.')
                 eq(lua_icon.icon, ctbl.icon, 'Wrong icon in the rendered component.')
