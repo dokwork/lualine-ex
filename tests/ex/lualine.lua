@@ -70,6 +70,7 @@ end
 ---@field hl? string
 ---@field color? Color
 ---@field value string
+---@field fn_number number
 
 ---Gets a string with rendered component and match its properties.
 ---@param rendered_component string
@@ -82,7 +83,16 @@ function M.match_rendered_component(rendered_component, opts)
     local p_icon = '(%S+)'
     local p_value = (opts and opts.draw_empty) and '(.*)' or '(.+)'
     local p_padding = '%s*'
+    local p_fn = "%%%d+@v:lua.require'lualine.utils.fn_store'.call_fn@"
     local t = {}
+
+    -- Extract 'on_click' part
+    local from, to = rendered_component:find(p_fn)
+    if from then
+        t.fn_number = tonumber(string.match(rendered_component, '%%(%d+)@'))
+        rendered_component = rendered_component:sub(1, from - 1)
+            .. rendered_component:sub(to + 1, #rendered_component)
+    end
 
     -- Try match the full pattern with both colors
     local _, hl1, value1, hl2, value2 = string.match(
@@ -112,20 +122,16 @@ function M.match_rendered_component(rendered_component, opts)
 
     -- Try to match the short pattern with icon color only
     if is_right_icon then
-        t.value, t.icon_hl, t.icon = string.match(
-            rendered_component,
-            p_value .. p_padding .. p_hl .. p_icon .. '$'
-        )
+        t.value, t.icon_hl, t.icon =
+            string.match(rendered_component, p_value .. p_padding .. p_hl .. p_icon .. '$')
         t.hl = default_hl
         t.icon_color = {
             fg = M.get_gui_color(t.icon_hl, 'fg#'),
             bg = M.get_gui_color(t.icon_hl, 'bg#'),
         }
     else
-        t.icon_hl, t.icon, t.value = string.match(
-            rendered_component,
-            p_hl .. p_icon .. p_padding .. p_value
-        )
+        t.icon_hl, t.icon, t.value =
+            string.match(rendered_component, p_hl .. p_icon .. p_padding .. p_value)
         t.icon_color = {
             fg = M.get_gui_color(t.icon_hl, 'fg#'),
             bg = M.get_gui_color(t.icon_hl, 'bg#'),

@@ -19,6 +19,7 @@ local AllLsp = require('lualine.ex.component'):extend(
         is_enabled = function(component)
             return not ex.is_empty(component:__clients())
         end,
+        on_click = require('lualine.ex.lsp').stop_inactive_clients
     })
 )
 
