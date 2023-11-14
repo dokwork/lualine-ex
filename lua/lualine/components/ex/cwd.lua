@@ -21,6 +21,9 @@ function Cwd:update_status()
     local depth = self.options.depth
     local sep = package.config:sub(1, 1)
     local dirs = vim.split(cwd, sep, { plain = true, trimempty = true })
+    if #dirs <= math.abs(depth) then
+        return cwd
+    end
     local prefix = (self.options.prefix and depth > 0) and self.options.prefix .. sep or ''
     local max_length = ex.max_length(self.options.max_length, cwd) or 0
 
@@ -38,7 +41,7 @@ function Cwd:update_status()
         else
             return ''
         end
-    until #cwd < max_length
+    until vim.fn.strdisplaywidth(cwd) < max_length
     return prefix .. cwd .. sep
 end
 
