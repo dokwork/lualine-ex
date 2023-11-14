@@ -51,27 +51,68 @@ M.merge = function(dest, source, already_visited)
 end
 
 ---Resolves a {max_length} option of a component.
---- - if {opt} is a function, it invokes that function with the {value} parameter;
---- - if {opt} is number > 0 and < 1, and {laststatus} == 3 then this function
+--- - if {lng} is a function, it invokes that function with the {value} parameter;
+--- - if {lng} is number > 0 and < 1, and {laststatus} == 3 then this function
 ---   calculates a fraction of the {vim.o.columns};
---- - if {opt} is number > 0 and < 1, and {laststatus} ~= 3 then this function
+--- - if {lng} is number > 0 and < 1, and {laststatus} ~= 3 then this function
 ---   calculates a fraction of the {vim.api.nvim_win_get_width(0)};
 --- - all other numbers will be returned as is;
 --- - in case of all other types the nill will be returned.
 ---
----@param opt number|fun(value: string) an initial setting for the max_length.
----@param value? string an actual component status which will be passed to the {opt}
+---@param lng number|fun(value: string) an initial setting for the max_length.
+---@param str? string an actual component value which will be passed to the {lng}
 ---              if it's a function.
 ---@return number | nil
-M.max_length = function(opt, value)
-    opt = (type(opt) == 'function') and opt(value) or opt
-    if type(opt) ~= 'number' then
+M.max_length = function(lng, str)
+    lng = (type(lng) == 'function') and lng(str) or lng
+    if type(lng) ~= 'number' then
         return nil
     end
-    if opt > 0 and opt < 1 then
-        return opt * (vim.o.laststatus == 3 and vim.o.columns or vim.api.nvim_win_get_width(0))
+    if lng > 0 and lng < 1 then
+        return tonumber(
+            lng * (vim.o.laststatus == 3 and vim.o.columns or vim.api.nvim_win_get_width(0))
+        )
     else
-        return opt
+        return lng
+    end
+end
+
+---Implementation of the {fmt} function to crop the component to the {max_length}.
+---
+---@param opts table
+---@field stub? string a string which will be used instead of cropped part of the original value.
+---                   Default is '…'.
+---@field side? string 'left' | 'right' a side from which a value will be cropped. If absent, it
+---                   will be calculated from the component's section: for sections a,b,c
+---                   a component value will be cropped from the left; for sections x,y,z from the
+---                   right.
+---@field max_length number a max length of the component value. See {max_length} function for
+---                         details. If not > 0 or absent, this function return nil.
+---@return nil | fun(value: string, component: LualineComponent) a function to format a component or
+---                  nil if {max_length} is absent or not > 0.
+M.crop = function(opts)
+    opts = opts or {}
+    local max_length = M.max_length(opts.max_length, str)
+    if max_length == nil then
+        return nil
+    end
+    local stub = opts.stub or '…'
+    return function(str, cmp)
+        local str_length = vim.fn.strdisplaywidth(str)
+        if str_length < max_length then
+            return str
+        end
+        local side = opts.side
+        if side == nil or (side ~= 'left' and side ~= 'right') then
+            side = (cmp.options.self.section < 'x') and 'left' or 'right'
+        end
+        local crop_length = max_length - vim.fn.strdisplaywidth(stub)
+        if side == 'right' then
+            str = vim.fn.strcharpart(str, 0, crop_length) .. stub
+        elseif side == 'left' then
+            str = stub .. vim.fn.strcharpart(str, str_length - crop_length, crop_length)
+        end
+        return str
     end
 end
 
