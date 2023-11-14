@@ -25,6 +25,14 @@ describe('cwd component', function()
         vim.api.nvim_win_get_width = mock.api.nvim_win_get_width
     end)
 
+    it('should do nothing when path less or equal to {depth}', function()
+        cwd = '/a/b/c/'
+        local opts = { depth = 3 }
+        l.test_matched_component(component_name, opts, function(ct)
+            eq(cwd, ct.value)
+        end)
+    end)
+
     it('should contain only {depth} parts of the cwd from the end', function()
         cwd = '/a/b/c/d/'
         local opts = { depth = 3 }
@@ -45,9 +53,8 @@ describe('cwd component', function()
     )
 
     describe('shorten algorithm', function()
-        cwd = '/abcd/efghi/jklmn/opqr/'
-
         it('should decrease the {depth} until the cwd less than {max_length}', function()
+            cwd = '/abcd/efghi/jklmn/opqr/'
             local expected_value = '…/jklmn/opqr/'
             local opts = { max_length = #expected_value, depth = 3 }
             l.test_matched_component(component_name, opts, function(ct)
@@ -56,9 +63,19 @@ describe('cwd component', function()
         end)
 
         it('should be empty if the {max_length} is 0', function()
+            cwd = '/abcd/efghi/jklmn/opqr/'
             local opts = { max_length = 1 }
             l.test_matched_component(component_name, opts, function(ct)
                 eq('', ct.value)
+            end)
+        end)
+
+        it('should count symbols, not bytes, to compare with max_length', function()
+            -- this path has less symbols than bytes:
+            cwd = '/абв/гд/'
+            local opts = { max_length = 9 }
+            l.test_matched_component(component_name, opts, function(ct)
+                eq(cwd, ct.value)
             end)
         end)
     end)
