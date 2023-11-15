@@ -3,13 +3,24 @@
 [![lualine-ex ci](https://github.com/dokwork/lualine-ex/actions/workflows/ci.yml/badge.svg)](https://github.com/dokwork/lualine-ex/actions/workflows/ci.yml)
 
 This is a [plugin](https://github.com/nvim-lualine/lualine.nvim/wiki/Plugins) 
-for [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) 
-with additional [components](#provided-components), and an extended class of the `lualine.component` with
-additional functionality (see [ExComponent.md](ExComponent.md)).
+for `lualine.nvim` with additional components.
 
-## Installation
+## 📒 <a name="contents:">Contents:</a>
+ - [📥 Installation](#installation)
+ - [🔧 New common component options](#new-common-component-options)
+ - [🧩 Provided components](#provided-components)
+    - [ex.spellcheck](#ex.spellcheck)
+    - [ex.cwd](#ex.cwd)
+    - [ex.relative_filename](#ex.relative_filename)
+    - [ex.git.branch](#ex.git.branch)
+    - [ex.lsp.single](#ex.lsp.single)
+    - [ex.lsp.all](#ex.lsp.all)
+ - [🛠️ Tools](#tools)
 
-This is not a plugin for vim. So, it's reasonable to install it as dependency for `lualine.nvim`.
+## 📥 <a name="installation">Installation</a>
+
+This is not a plugin for neovim. This is a plugin for _plugin_ for neovim ㋡. 
+So, it's reasonable to install it as dependency for `lualine.nvim`:
 
 ### [Lazy](https://github.com/folke/lazy.nvim)
 
@@ -36,23 +47,34 @@ use {
     }
 }
 ```
+ _It may be reasonable to use particular tag to avoid breaking changes._
 
-## New common component options
+## 🔧 <a name="new-common-component-options">New common component options</a>
+
+Every provided component has additional options:
 
 ```lua
 {
-    -- A function or boolean to check is the component enabled or not:
+    -- The function or boolean to check is the component enabled or not:
     is_enabled = true
 
-    -- A color for the disabled component:
+    -- The color for the disabled component:
     disabled_color = { fg = 'grey' }
 
-    -- A color for the icon of the disabled component:
+    -- The color for the icon of the disabled component:
     disabled_icon_color = { fg = 'grey' }
+
+    -- The different default for the option:
+    draw_empty = true
 }
 ```
 
-## Provided components
+This plugin introduces a new `disabled` state. This state means that a component is not active, but
+an icon still should be shown with `disabled` color. The difference between  `cond = false` and the
+`is_enabled = false` is that in the first case a component will not be rendered at all, but in the
+second case only the icon with `disabled_color` will be shown.
+
+## 🧩 <a name="provided-components">Provided components</a>
 
 _Most of the components use icons from a [patched nerd font](https://www.nerdfonts.com/) by default._
 
@@ -112,7 +134,7 @@ sections = {
 
 **Reduction algorithm**
 
-The absolute value of the {depth} will be decreased until the length of the path become less then
+The absolute value of the {depth} will be decreased until the length of the path becomes less then
 {max_length}.
 
 
@@ -131,15 +153,15 @@ system relative to the `cwd`:
 Some path may be very long and takes significant part in the statusline. It's possible to specify the
 {max_length} of the filename. To achieve that the follow algorithm is used:
 
-- every part of the path is shorten till the {shorten.length} except parts from the {shorten.exclude}
+- every part of the path is shortened till the {shorten.length} except parts from the {shorten.exclude}
   list;
 - then the {shorten.length} will be repeatedly decreased until 1 or until the {max_length} will be 
   achieved;
-- if it's not enough then the {exclude} setting will be ignored and all parts will be shorten;
+- if it's not enough then the {exclude} setting will be ignored and all parts will be shortened;
 - if the result is still longer than {max_length} than only the file name will be used with the prefix
   {filename_only_prefix}.
 
-Example of the shorten filename with follow options `{ shorten: { length = 3, exclude = { 1 } } }`:
+Example of the shortened filename with follow options `{ shorten: { length = 3, exclude = { 1 } } }`:
 
 | Space for component enough to show ...| Component example |
 | :--- | ---: |
@@ -152,9 +174,9 @@ Example of the shorten filename with follow options `{ shorten: { length = 3, ex
 
 The {max_length} may be a number, or a function which receives the current component value and
 returns a number:
- - Every value less than 0 means that the filename never should be shorten;
- - Zero means that filename should be always shorten;
- - A value more or equal to 1 represents a length, after which the filename should be shorten;
+ - Every value less than 0 means that the filename never should be shortened;
+ - Zero means that filename should be always shortened;
+ - A value more or equal to 1 represents a length, after which the filename should be shortened;
  - A value between 0 and 1 represents a fraction of the current window width if the {laststatus} == 2, 
    or a fraction of the terminal width.
 
@@ -164,11 +186,13 @@ returns a number:
     -- The prefix which is used when the current file is outside cwd
     external_prefix = nil,
 
-    -- The prefix which is used when the length of the filename after shorten
+    -- The prefix which is used when the length of the filename after shortening
     -- is longer than {max_length}
     filename_only_prefix = '…/',
 
-    -- The max length of the component value.
+    -- The max length of the component value. It may be a number or a function.
+    -- If it's function, then it will be invoked with actual value, and should 
+    -- return a number:
     -- < 0          - never shorten; 
     -- 0            - always shorten; 
     -- > 0 and  < 1 - shorten when longer than {max_length} * {vim.o.columns} 
@@ -182,15 +206,15 @@ returns a number:
     shorten = { 
         -- The count of letters, which will be taken from every part of the path
         lenght = 5, 
-        -- The list of indexes of filename parts, which should not be shorten at all
-        -- (the file name { -1 } is always excluded)
+        -- The list of indexes of filename parts, which should not be shortened
+        -- at all (the file name { -1 } is always excluded)
         exclude = nil 
     },
 }
 ```
 
-_`ex.relative_filename` component doesn't provide options to show file states, because it easily
-possible to do with standard approach:_
+_`ex.relative_filename` component doesn't provide options to show file states,
+because it is easily possible to do with standard approach:_
 
 ```lua
 -- readonly mode indicator example:
@@ -211,7 +235,7 @@ possible to do with standard approach:_
 | :---: | :---: | :---: |
 | <img src="https://github.com/dokwork/lualine-ex/assets/6939832/23b34d15-c711-49dc-a94b-0a27aab0d436" height=18 />| <img src="https://github.com/dokwork/lualine-ex/assets/6939832/6e66a6f5-84ed-45a1-a03f-f5592c670ec1" height=18 />| <img src="https://github.com/dokwork/lualine-ex/assets/6939832/0d3a41b1-6538-4d34-b890-c3b978f35c6d" height=18 />|
 
-This component shows a name of the git branch for the current working directory. The color of this
+This component shows a name of a git branch for a current working directory. The color of this
 component depends on the state of the git worktree. The component can show different states of the
 git worktree:
 
@@ -219,6 +243,7 @@ git worktree:
   - `committed` means that everything is committed, and no one tracked file is changed;
   - `disabled` means that the `cwd` is not under git control. 
 
+**Default configuration:**
 ```lua
 sections = {
   lualine_a = {
@@ -240,10 +265,35 @@ sections = {
       },
 
       -- The color for the disabled component:
-      disabled_color = { fg = 'grey' }
+      disabled_color = { fg = 'grey' },
 
       -- The color for the icon of the disabled component:
-      disabled_icon_color = { fg = 'grey' }
+      disabled_icon_color = { fg = 'grey' },
+
+      -- It can be a function which receive an actual component value, and should return a number;
+      -- or it can be a number:
+      -- * any number >= 1 is max count of symbols in the branch name
+      -- * a number between 0 and 1 means fraction of the {vim.o.columns}
+      --   for {laststatus} == 3, and fraction of the {vim.api.nvim_win_get_width(0)}
+      --   in other cases.
+      -- When this option is defined, a component value will be cropped if it's longer then
+      -- a value of this property.
+      max_length = nil,
+
+      -- Follow options actual only if {max_length} is defined:
+      crop = {
+        -- The string which will be used instead of cropped part.
+        stub =  '…',
+
+         -- The side from which a value should be cropped. It may be 'left' or 'right'.
+         -- If not specified, result depends on the component section:
+         --   'right' for a|b|c
+         --   'left' for x|y|z
+        side = nil 
+      }
+
+      -- The {ex.crop} function is default {fmt} implementation.
+      fmt = ex.crop
     }
   }
 }
@@ -263,11 +313,11 @@ If no one icon was found for the lsp client neither in `icons`, nor in `nvim-wev
 will be used. For the case, when no one server is run, the component is in disabled state and has
 the `lsp_is_off` icon.
 
-An icon should be either string, or a table with following format: the `[1]` element must be a string with
+An icon should be either a string or a table with following format: the `[1]` element must be a string with
 icon's symbol; the optional element `color` should be one of: a name of a color, or a color in #RGB format, 
 or a table with `fg` color. 
 
-**NOTE:** the icon's property `color` with type of string for any of an icon from the `icons` has
+**NOTE:** the icon's property `color` with the type of string for any icon from the `icons` has
 different meaning comparing to usual `lualine` colors. It should be a name of a *color* **not** a
 *highlight group*.
 
@@ -318,8 +368,6 @@ The component in _disabled_ state has a color specified in the option `disabled_
 
 If no one lsp client is run, the component shows only `lsp_is_off` icon.
 
-You may double click by this component to close all not used lsp clients.
-
 The `ex.lsp.all` component has the same options as the [ex.lsp.single](#exlspsingle) component, 
 with few additional:
 
@@ -337,9 +385,26 @@ sections = {
       -- If true then every closed client will be echoed:
       notify_enabled = true
       
-      -- A name of highlight group which should be used in echo:
+      -- The name of highlight group which should be used in echo:
       notify_hl = 'Comment'
     }
   }
 }
 ```
+
+You may double click by this component to stop all not used lsp clients. 
+Also, you can use the function to close not used clients outside the component
+(see [Tools > stop_unused_clients](Tools.md/#stop_unused_clients)), or change the `on_click` handler:
+
+```lua
+-- close on Ctrl+single click
+on_click = function(clicks, button, modified)
+    if modified == 'c' and clicks == 1 then
+        require('lualine.ex.lsp').stop_unused_clients()
+    end
+end
+```
+
+## 🛠️ <a name="tools">Tools</a>
+This plugin provide additional tools to help you create your own components. Read more details here:
+[Tools.md](Tools.md).
