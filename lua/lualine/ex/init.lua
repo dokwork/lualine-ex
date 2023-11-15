@@ -62,14 +62,14 @@ end
 ---@param lng number|fun(value: string) an initial setting for the max_length.
 ---@param str? string an actual component value which will be passed to the {lng}
 ---              if it's a function.
----@return number | nil
+---@return integer | nil
 M.max_length = function(lng, str)
     lng = (type(lng) == 'function') and lng(str) or lng
     if type(lng) ~= 'number' then
         return nil
     end
     if lng > 0 and lng < 1 then
-        return tonumber(
+        return math.floor(
             lng * (vim.o.laststatus == 3 and vim.o.columns or vim.api.nvim_win_get_width(0))
         )
     else
@@ -78,42 +78,28 @@ M.max_length = function(lng, str)
 end
 
 ---Implementation of the {fmt} function to crop the component to the {max_length}.
----
----@param opts table
----@field stub? string a string which will be used instead of cropped part of the original value.
----                   Default is '…'.
----@field side? string 'left' | 'right' a side from which a value will be cropped. If absent, it
----                   will be calculated from the component's section: for sections a,b,c
----                   a component value will be cropped from the left; for sections x,y,z from the
----                   right.
----@field max_length number a max length of the component value. See {max_length} function for
----                         details. If not > 0 or absent, this function return nil.
----@return nil | fun(value: string, component: LualineComponent) a function to format a component or
----                  nil if {max_length} is absent or not > 0.
-M.crop = function(opts)
-    opts = opts or {}
-    local max_length = M.max_length(opts.max_length, str)
-    if max_length == nil then
-        return nil
-    end
-    local stub = opts.stub or '…'
-    return function(str, cmp)
-        local str_length = vim.fn.strdisplaywidth(str)
-        if str_length < max_length then
-            return str
-        end
-        local side = opts.side
-        if side == nil or (side ~= 'left' and side ~= 'right') then
-            side = (cmp.options.self.section < 'x') and 'left' or 'right'
-        end
-        local crop_length = max_length - vim.fn.strdisplaywidth(stub)
-        if side == 'right' then
-            str = vim.fn.strcharpart(str, 0, crop_length) .. stub
-        elseif side == 'left' then
-            str = stub .. vim.fn.strcharpart(str, str_length - crop_length, crop_length)
-        end
+---@param str string
+---@param cmp LualineComponent
+---@return string
+M.crop = function(str, cmp)
+    local crop_opts = cmp.options.crop or {}
+    local max_length = M.max_length(cmp.options.max_length, str)
+    local stub = crop_opts.stub or '…'
+    local str_length = vim.fn.strdisplaywidth(str)
+    if max_length == nil or str_length < max_length then
         return str
     end
+    local side = crop_opts.side
+    if side == nil or (side ~= 'left' and side ~= 'right') then
+        side = (cmp.options.self.section < 'x') and 'left' or 'right'
+    end
+    local crop_length = max_length - vim.fn.strdisplaywidth(stub)
+    if side == 'right' then
+        str = vim.fn.strcharpart(str, 0, crop_length) .. stub
+    elseif side == 'left' then
+        str = stub .. vim.fn.strcharpart(str, str_length - crop_length, crop_length)
+    end
+    return str
 end
 
 return M
