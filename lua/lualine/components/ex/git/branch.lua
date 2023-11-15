@@ -1,22 +1,34 @@
 local Git = require('lualine.ex.git_provider')
+local ex = require('lualine.ex')
 
 ---@class GitBranchColors
 ---@field changed Color
 ---@field commited Color
 
+---@class CropOptions
+---@field side? string 'left' | 'right'
+---@field stub? string
+
 ---@class GitBranchOptions: ExComponentOptions
 ---@field icon Icon
 ---@field sync boolean
 ---@field colors GitBranchColors
+---@field max_length? number|fun(): number
 local default_options = {
     icon = { ' ' },
     colors = {
         changed = { fg = 'orange' },
         commited = { fg = 'green' },
     },
+    max_length = nil,
+    crop = {
+        stub = '…',
+        side = nil,
+    },
     is_enabled = function(component)
         return component.git():git_root() ~= nil
     end,
+    fmt = ex.crop,
 }
 
 ---Singleton instance for any non git paths

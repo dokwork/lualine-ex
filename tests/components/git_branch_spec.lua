@@ -77,24 +77,31 @@ describe('ex.git.branch component', function()
             eq('%' .. branch, c:update_status())
         end)
 
+        it('should crop branch name', function()
+            -- let's use symbols which are not equal to one byte,
+            -- to bu sure that crop works correctly
+            local branch = 'абвгд'
+            git:new_branch(branch)
+            local opts = { max_length = 4, crop = { side = 'right', stub = '!' } }
+            l.test_matched_component(component_name, opts, function(ctbl)
+                eq('абв!', ctbl.value)
+            end)
+        end)
+
         it('a rendered component should have the branch name and the icon', function()
             git:checkout('main')
-            local rendered_component = l.render_component(component_name)
-            local ctbl = l.match_rendered_component(rendered_component)
-            eq('', ctbl.icon, 'Wrong icon in: ' .. rendered_component)
-            eq('main', ctbl.value, 'Wrong value in: ' .. rendered_component)
+            l.test_matched_component(component_name, opts, function(ctbl)
+                eq('', ctbl.icon)
+                eq('main', ctbl.value)
+            end)
         end)
 
         it('rendered component should have "committed" color', function()
             local commited_color = { fg = 'blue' }
             local opts = l.opts({ colors = { commited = commited_color }, sync = true })
-            local rendered_component = l.render_component(component_name, opts)
-            local ctbl = l.match_rendered_component(rendered_component)
-            l.eq_colors(
-                commited_color.fg,
-                ctbl.color.fg,
-                'Wrong color for component in ' .. rendered_component
-            )
+            l.test_matched_component(component_name, opts, function(ctbl)
+                l.eq_colors(commited_color.fg, ctbl.color.fg)
+            end)
         end)
     end)
 end)

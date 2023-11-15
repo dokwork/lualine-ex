@@ -107,47 +107,61 @@ describe('max_length', function()
 end)
 
 describe('crop', function()
-    it('should return nil if max_length is not specified', function()
-        eq(nil, ex.crop())
-    end)
-
-    it('should crop the value from right side', function()
+    it('should return passed string if max_length is not specified', function()
         local component = { options = {} }
-        local value = 'example'
-        eq('exam…', ex.crop({ side = 'right', max_length = 5 })(value, component))
+        local str = 'example'
+        eq(str, ex.crop(str, component))
     end)
 
-    it('should crop the value from left side', function()
-        local component = { options = {} }
-        local value = 'example'
-        eq('…mple', ex.crop({ side = 'left', max_length = 5 })(value, component))
+    it('should crop the string from the right side', function()
+        local component = { options = { crop = { side = 'right' }, max_length = 5 } }
+        local str = 'example'
+        eq('exam…', ex.crop(str, component))
     end)
 
-    it('should crop the value from left side for a component in sections a,b,c', function()
-        for _, section in ipairs({ 'a', 'b', 'c' }) do
-            local component = { options = { self = { section = section } } }
-            local value = 'example'
-            eq('…mple', ex.crop({ max_length = 5 })(value, component))
+    it('should crop the string from the left side', function()
+        local component = { options = { crop = { side = 'left' }, max_length = 5 } }
+        local str = 'example'
+        eq('…mple', ex.crop(str, component))
+    end)
+
+    it(
+        'should crop the string from the left side when the component s in sections a,b,c',
+        function()
+            for _, section in ipairs({ 'a', 'b', 'c' }) do
+                local component = { options = { max_length = 5, self = { section = section } } }
+                local str = 'example'
+                eq('…mple', ex.crop(str, component))
+            end
         end
-    end)
+    )
 
-    it('should crop the value from right side for a component in sections x,y,z', function()
-        for _, section in ipairs({ 'x', 'y', 'z' }) do
-            local component = { options = { self = { section = section } } }
-            local value = 'example'
-            eq('exam…', ex.crop({ max_length = 5 })(value, component))
+    it(
+        'should crop the string from the right side when the component is in sections x,y,z',
+        function()
+            for _, section in ipairs({ 'x', 'y', 'z' }) do
+                local component = { options = { max_length = 5, self = { section = section } } }
+                local str = 'example'
+                eq('exam…', ex.crop(str, component))
+            end
         end
-    end)
+    )
 
     it('should replace an extra part by the stub', function()
-        local component = { options = {} }
-        local value = 'example'
-        eq('---le', ex.crop({ side = 'left', stub = '---', max_length = 5 })(value, component))
+        local component = { options = { crop = { side = 'left', stub = '---' }, max_length = 5 } }
+        local str = 'example'
+        eq('---le', ex.crop(str, component))
     end)
 
-    it('should follow section logic in case of wrong value of the side option', function()
-        local component = { options = { self = { section = 'a' } } }
-        local value = 'example'
-        eq('!mple', ex.crop({ side = 'wrong value', stub = '!', max_length = 5 })(value, component))
+    it('should ignore side in case of wrong value', function()
+        local component = {
+            options = {
+                crop = { side = 'wrong value', stub = '!' },
+                max_length = 5,
+                self = { section = 'a' },
+            },
+        }
+        local str = 'example'
+        eq('!mple', ex.crop(str, component))
     end)
 end)
