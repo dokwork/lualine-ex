@@ -1,9 +1,9 @@
 local M = {}
 
 ---Iterates over active lsp clients and stops every client without attached buffers.
----@param opts table
----@field notify_enabled boolean true enables echo about every stopped client.
----@field notify_hl HighlightGroup a name of the highlight which should be used in echo.
+---@param opts? table
+---@field notify_enabled? boolean true enables echo about every stopped client.
+---@field notify_hl? HighlightGroup a name of the highlight which should be used in echo.
 M.stop_unused_clients = function(opts)
     opts = opts or {}
     local hl = opts.notify_hl or 'Comment'

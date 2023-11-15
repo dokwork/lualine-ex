@@ -51,29 +51,29 @@ M.merge = function(dest, source, already_visited)
 end
 
 ---Resolves a {max_length} option of a component.
---- - if {lng} is a function, it invokes that function with the {value} parameter;
---- - if {lng} is number > 0 and < 1, and {laststatus} == 3 then this function
+--- - if {ln} is a function, it invokes that function with the {value} parameter;
+--- - if {ln} is number > 0 and < 1, and {laststatus} == 3 then this function
 ---   calculates a fraction of the {vim.o.columns};
---- - if {lng} is number > 0 and < 1, and {laststatus} ~= 3 then this function
+--- - if {ln} is number > 0 and < 1, and {laststatus} ~= 3 then this function
 ---   calculates a fraction of the {vim.api.nvim_win_get_width(0)};
 --- - all other numbers will be returned as is;
---- - in case of all other types the nill will be returned.
+--- - in case of all other types the nil will be returned.
 ---
----@param lng number|fun(value: string) an initial setting for the max_length.
+---@param ln number|fun(value: string) an initial setting for the max_length.
 ---@param str? string an actual component value which will be passed to the {lng}
 ---              if it's a function.
 ---@return integer | nil
-M.max_length = function(lng, str)
-    lng = (type(lng) == 'function') and lng(str) or lng
-    if type(lng) ~= 'number' then
+M.max_length = function(ln, str)
+    ln = (type(ln) == 'function') and ln(str) or ln
+    if type(ln) ~= 'number' then
         return nil
     end
-    if lng > 0 and lng < 1 then
+    if ln > 0 and ln < 1 then
         return math.floor(
-            lng * (vim.o.laststatus == 3 and vim.o.columns or vim.api.nvim_win_get_width(0))
+            ln * (vim.o.laststatus == 3 and vim.o.columns or vim.api.nvim_win_get_width(0))
         )
     else
-        return lng
+        return ln
     end
 end
 
