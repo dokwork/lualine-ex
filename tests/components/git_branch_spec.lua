@@ -97,10 +97,10 @@ describe('ex.git.branch component', function()
         end)
 
         it('rendered component should have "committed" color', function()
-            local commited_color = { fg = 'blue' }
-            local opts = l.opts({ colors = { commited = commited_color }, sync = true })
+            local committed_color = { fg = 'blue' }
+            local opts = l.opts({ colors = { committed = committed_color }, sync = true })
             l.test_matched_component(component_name, opts, function(ctbl)
-                l.eq_colors(commited_color.fg, ctbl.color.fg)
+                l.eq_colors(committed_color.fg, ctbl.color.fg)
             end)
         end)
     end)

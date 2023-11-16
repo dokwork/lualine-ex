@@ -207,7 +207,7 @@ possible to do with standard approach:_
 
 ### ex.git.branch
 
-| No git worktree | Worktree is commited | Worktree is changed |
+| No git worktree | Worktree is committed | Worktree is changed |
 | :---: | :---: | :---: |
 | <img src="https://github.com/dokwork/lualine-ex/assets/6939832/23b34d15-c711-49dc-a94b-0a27aab0d436" height=18 />| <img src="https://github.com/dokwork/lualine-ex/assets/6939832/6e66a6f5-84ed-45a1-a03f-f5592c670ec1" height=18 />| <img src="https://github.com/dokwork/lualine-ex/assets/6939832/0d3a41b1-6538-4d34-b890-c3b978f35c6d" height=18 />|
 
@@ -216,7 +216,7 @@ component depends on the state of the git worktree. The component can show diffe
 git worktree:
 
   - `changed` means that at least one uncommitted change exists;
-  - `commited` means that everything is committed, and no one tracked file is changed;
+  - `committed` means that everything is committed, and no one tracked file is changed;
   - `disabled` means that the `cwd` is not under git control. 
 
 ```lua
@@ -236,7 +236,7 @@ sections = {
       -- The colors for possible states:
       colors = {
           changed = { fg = 'orange' },
-          commited = { fg = 'green' },
+          committed = { fg = 'green' },
       },
 
       -- The color for the disabled component:

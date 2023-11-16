@@ -3,7 +3,7 @@ local ex = require('lualine.ex')
 
 ---@class GitBranchColors
 ---@field changed Color
----@field commited Color
+---@field committed Color
 
 ---@class CropOptions
 ---@field side? string 'left' | 'right'
@@ -18,7 +18,7 @@ local default_options = {
     icon = { ' ' },
     colors = {
         changed = { fg = 'orange' },
-        commited = { fg = 'green' },
+        committed = { fg = 'green' },
     },
     max_length = nil,
     crop = {
@@ -57,7 +57,7 @@ function GitBranch:pre_init()
         if is_worktree_changed == nil then
             return self.options.disabled_color
         end
-        return is_worktree_changed and self.options.colors.changed or self.options.colors.commited
+        return is_worktree_changed and self.options.colors.changed or self.options.colors.committed
     end
 end
 
