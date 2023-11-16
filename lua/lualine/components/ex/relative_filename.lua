@@ -16,7 +16,7 @@ local Path = require('plenary.path')
 --- * prefix {external_prefix} in case when the file is not in the one of home
 ---          subdirectories;
 --- * prefix "~" in case when the file is in one of home subdirectories.
----Also it may shorten the file path according to {max_length}.
+---Also, it may shorten the file path according to {max_length}.
 function M:update_status()
     local current_file = vim.fn.expand('%:p')
     if current_file == '' then
