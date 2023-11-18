@@ -143,7 +143,7 @@ function Ex:draw(default_highlight, is_focused)
     self.default_hl = default_highlight
     local status = self:update_status(is_focused)
     if self.options.fmt then
-        status = self.options.fmt(status or '')
+        status = self.options.fmt(status or '', self)
     end
     -- we have two option to turn icon off:
     -- 1. turn off all icons for components
