@@ -231,4 +231,4 @@ For example:
 make demo component=ex.cwd component_opts='{ "depth": 1 }'
 ```
 
-![demo]()
+<img src="https://github.com/dokwork/lualine-ex/assets/1548114/66317d8e-6ecd-4329-bfbb-6f355c642ed6" height=100 />
