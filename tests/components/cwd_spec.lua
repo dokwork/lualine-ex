@@ -33,8 +33,24 @@ describe('cwd component', function()
         end)
     end)
 
+    it('should add the path separator to the end of the cwd', function()
+        cwd = '/a/b/c'
+        local opts = { depth = 3 }
+        l.test_matched_component(component_name, opts, function(ct)
+            eq(cwd .. '/', ct.value)
+        end)
+    end)
+
     it('should contain only {depth} parts of the cwd from the end', function()
         cwd = '/a/b/c/d/'
+        local opts = { depth = 3 }
+        l.test_matched_component(component_name, opts, function(ct)
+            eq('…/b/c/d/', ct.value)
+        end)
+    end)
+
+    it('should add the path separator to the end of the cropped cwd', function()
+        cwd = '/a/b/c/d'
         local opts = { depth = 3 }
         l.test_matched_component(component_name, opts, function(ct)
             eq('…/b/c/d/', ct.value)
