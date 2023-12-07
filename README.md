@@ -9,12 +9,12 @@ for `lualine.nvim` with additional components.
  - [📥 Installation](#installation)
  - [🔧 New common component options](#new-common-component-options)
  - [🧩 Provided components](#provided-components)
-    - [ex.spellcheck](#ex.spellcheck)
-    - [ex.cwd](#ex.cwd)
-    - [ex.relative_filename](#ex.relative_filename)
-    - [ex.git.branch](#ex.git.branch)
-    - [ex.lsp.single](#ex.lsp.single)
-    - [ex.lsp.all](#ex.lsp.all)
+    - [ex.spellcheck](#exspellcheck)
+    - [ex.cwd](#excwd)
+    - [ex.relative_filename](#exrelative_filename)
+    - [ex.git.branch](#exgitbranch)
+    - [ex.lsp.single](#exlspsingle)
+    - [ex.lsp.all](#exlspall)
  - [🛠️ Tools](#tools)
 
 ## 📥 <a name="installation">Installation</a>
