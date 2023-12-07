@@ -22,7 +22,7 @@ function Cwd:update_status()
     local sep = package.config:sub(1, 1)
     local dirs = vim.split(cwd, sep, { plain = true, trimempty = true })
     if #dirs <= math.abs(depth) then
-        return cwd
+        return cwd:sub(#cwd) == sep and cwd or cwd .. sep
     end
     local prefix = (self.options.prefix and depth > 0) and self.options.prefix .. sep or ''
     local max_length = ex.max_length(self.options.max_length, cwd) or 0
