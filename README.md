@@ -17,6 +17,7 @@ for `lualine.nvim` with additional components.
     - [ex.git.branch](#exgitbranch)
     - [ex.lsp.single](#exlspsingle)
     - [ex.lsp.all](#exlspall)
+    - [ex.lsp.null_ls](#exlspnull_ls)
  - [🛠️ Tools](#tools)
 
 ## 📥 <a name="installation">Installation</a>
@@ -470,6 +471,46 @@ on_click = function(clicks, button, modified)
     end
 end
 ```
+
+### ex.lsp.null_ls
+
+This component shows names of the
+[null-ls](https://github.com/nvimtools/none-ls.nvim) sources according to the specified
+[`query`](https://github.com/nvimtools/none-ls.nvim/blob/main/doc/SOURCES.md#get_sourcequery).
+By default, it shows names of all sources actual to the current buffer. All
+duplicated names are merged.
+
+```lua
+sections = {
+  lualine_a = {
+    {
+      'ex.lsp.null_ls',
+
+      -- The table or function that returns the table with the source query.
+      -- By default it shows only actual sorces. To show all registered sources
+      -- you can use just empty table:
+      -- query = {}
+      query = function()
+        return { filetype = vim.bo.filetype }
+      end,
+
+      -- The string separator between names
+      source_names_separator = ',',
+
+      -- The color for the disabled component:
+      disabled_color = { fg = 'grey' }
+
+      -- The color for the icon of the disabled component:
+      disabled_icon_color = { fg = 'grey' }
+    }
+  }
+}
+```
+
+No one source:&nbsp;<img height="18" alt="null-ls-disabled" src="https://github.com/dokwork/lualine-ex/assets/6939832/04ce4a14-a3f9-4d90-a229-d19b78fa7c11">
+The `jq` and the `spell` sources are active for the current buffer:<img height="18" alt="nulll-ls-enabled" src="https://github.com/dokwork/lualine-ex/assets/6939832/dda7dbb4-8647-49a2-8c28-8d29a617c2b9">
+
+
 
 ## 🛠️ <a name="tools">Tools</a>
 This plugin provide additional tools to help you create your own components. Read more details here:
