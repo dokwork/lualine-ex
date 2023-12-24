@@ -63,6 +63,9 @@ local function is_lsp_client_active(client)
     if not client then
         return false
     end
+    if client.name == 'null-ls' then
+        return require('null-ls').is_registered({ filetype = vim.bo.filetype })
+    end
     local buffers = vim.lsp.get_buffers_by_client_id(client.id) or {}
     local is_active = vim.tbl_contains(buffers, vim.fn.bufnr('%'))
     return is_active and is_lsp_client_ready(client)
