@@ -20,6 +20,8 @@ function M.it(desc, fun)
     require('plenary.busted').it(desc, fun)
 end
 
+--- Ignores all tests in the default {it}, except those which are in
+--- the require('tests.ex.busted').it
 M.ignore_all_tests = function(self)
     it = function(desc)
         M.ignore_it(desc, nil, 'ignore all')

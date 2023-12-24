@@ -28,8 +28,6 @@ local AllLsp =
 function AllLsp:pre_init()
     self.options.component_name = 'ex_lsp_all'
     self.components = {}
-    -- will be used to avoid duplicate highlights:
-    self.__hls_cache = {}
     self.options.on_click = self.options.on_click
         or function(clicks, button, modified)
             if clicks > 1 then
@@ -71,7 +69,7 @@ function AllLsp:update_status(is_focused)
                 lsp = SingleLsp:new({
                     client = client,
                     component_name = str_escape('inner_lsp_' .. client.name),
-                    hls_cache = self.__hls_cache,
+                    hls_cache = self.hls_cache,
                     self = self.options.self,
                     icons = self.options.icons,
                     icons_enabled = self.options.icons_enabled,
