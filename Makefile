@@ -10,10 +10,16 @@ export XDG_CONFIG_HOME=$(ROOT)/config
 
 START=$(XDG_CONFIG_HOME)/nvim/pack/dokwork/start
 
+# === Dependencies ===
+# Common for the plugin
 PLENARY=$(START)/plenary.nvim
 DEVICONS=$(START)/nvim-web-devicons
-LSPCONFIG=$(START)/lualine.nvim
 LUALINE=$(START)/nvim-lspconfig
+
+# Specific for components:
+LSPCONFIG=$(START)/lualine.nvim
+NULL_LS=$(START)/null-ls.nvim
+# ====================
 
 define HELP
 make [command]\nCommands:
@@ -44,6 +50,10 @@ You can pass a path to file which should be opened in demo:
 Also, you can pass custom options to the demo component as a json:
 > make demo component=ex.cwd component_opts='{ "depth": 1 }'
 
+If a component needs additional plugin, you can install it if specify
+'plugin' name as <github user>/<github repo>:
+> make install plugin nvimtools/none-ls.nvim
+
 endef
 
 help: export HELP:=$(HELP)
@@ -61,9 +71,13 @@ fmt:
 
 install:
 	@[ -d $(PLENARY) ] || git clone --depth 1 https://github.com/nvim-lua/plenary.nvim $(PLENARY)
-	@[ -d $(DEVICONS)/ ] || git clone --depth 1 https://github.com/nvim-tree/nvim-web-devicons $(DEVICONS)
-	@[ -d $(LSPCONFIG)/ ] || git clone --depth 1 https://github.com/neovim/nvim-lspconfig $(LSPCONFIG)
-	@[ -d $(LUALINE)/ ] || git clone --depth 1 https://github.com/nvim-lualine/lualine.nvim $(LUALINE)
+	@[ -d $(DEVICONS) ] || git clone --depth 1 https://github.com/nvim-tree/nvim-web-devicons $(DEVICONS)
+	@[ -d $(LSPCONFIG) ] || git clone --depth 1 https://github.com/neovim/nvim-lspconfig $(LSPCONFIG)
+	@[ -d $(LUALINE) ] || git clone --depth 1 https://github.com/nvim-lualine/lualine.nvim $(LUALINE)
+	@[ -d $(NULL_LS) ] || git clone --depth 1 https://github.com/nvimtools/none-ls.nvim $(NULL_LS)
+ifdef plugin
+	@[ -d $(START)/$(notdir $(plugin)) ] || git clone --depth 1 https://github.com/$(plugin) $(START)/$(notdir $(plugin))
+endif
 
 test: install
 	nvim --headless -u tests/init.lua -c "PlenaryBustedDirectory  tests/$(only) {minimal_init='tests/init.lua',sequential=true}"
