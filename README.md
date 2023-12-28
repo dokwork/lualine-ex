@@ -12,6 +12,7 @@ for `lualine.nvim` with additional components.
     - [ex.spellcheck](#exspellcheck)
     - [ex.cwd](#excwd)
     - [ex.location](#exlocation)
+    - [ex.progress](#exprogress)
     - [ex.relative_filename](#exrelative_filename)
     - [ex.git.branch](#exgitbranch)
     - [ex.lsp.single](#exlspsingle)
@@ -162,6 +163,42 @@ sections = {
       -- Every specifier can be used in similar maner to %d in the {string.format} function.
       -- The pattern similar to the default 'location' component is '%3L:%-2C'
       pattern = '%2C:%-3L/%T'
+    }
+  }
+}
+```
+
+### ex.progress
+
+This component shows the progress in the file. It has two pre-build modes: 'percent' and 'bar'. The first
+one is similar to the default `progress` component, but in the second 'bar' mode the progress is
+shown as a progress bar.
+
+| mode | example |
+|:---:|:---:|
+| `'percent'` | <img height=18 alt="ex progress-percent" src="https://github.com/dokwork/lualine-ex/assets/6939832/fa2413c7-dd03-474f-8152-d9b8f4d026ef"> |
+| `'bar'` | <img height=18 alt="ex progress-bar" src="https://github.com/dokwork/lualine-ex/assets/6939832/df29650a-3fa9-422b-940f-956079f3a8bb"> |
+
+```lua
+sections = {
+  lualine_a = {
+    {
+      'ex.progress',
+      
+      -- How to show the progress. It may be the one of two string constants:
+      -- 'percent' or 'bar'. In the 'percent' mode the progress is shown as percent of the file.
+      -- In the 'bar' mode it's shown as the vertical bar. Also, it can be a table with symbols
+      -- which will be taken to show according to the progress, or a function, which receive three
+      -- arguments: the component itself, the cursor line and total lines count in the file.
+      mode = 'percent',
+
+      -- This string will be shown when the cursor is on the first line of the file. Set `false`
+      -- to turn this logic off.
+      top = 'Top',
+
+      -- This string will be shown when the cursor is on the last line of the file. Set `false`
+      -- to turn this logic off.
+      bottom = 'Bot'
     }
   }
 }
