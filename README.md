@@ -11,6 +11,7 @@ for `lualine.nvim` with additional components.
  - [🧩 Provided components](#provided-components)
     - [ex.spellcheck](#exspellcheck)
     - [ex.cwd](#excwd)
+    - [ex.location](#exlocation)
     - [ex.relative_filename](#exrelative_filename)
     - [ex.git.branch](#exgitbranch)
     - [ex.lsp.single](#exlspsingle)
@@ -137,6 +138,34 @@ sections = {
 The absolute value of the {depth} will be decreased until the length of the path becomes less then
 {max_length}.
 
+### ex.location
+
+This component shows the current cursor position in configurable format. Comparing to the default
+`location` component, this component can show total number of lines, and may be flexibly configured.
+
+| pattern | example |
+|:---:|:---:|
+| `'%2C:%-3L/%T'` | <img height=18 alt="ex location" src="https://github.com/dokwork/lualine-ex/assets/6939832/743ffc33-a5f4-4f95-9204-e217fa9cdbf7"> |
+| `'%3L:%-2C'` | <img  height=18  alt="ex location-2" src="https://github.com/dokwork/lualine-ex/assets/6939832/2e9dfa90-7363-4a99-a8d1-c1cc9033d5f7"> |
+
+
+```lua
+sections = {
+  lualine_a = {
+    {
+      'ex.location',
+      
+      -- The pattern to show the cursor position. Here three possible specifiers:
+      --  'L' means 'line' - the number of the line where is the cursor now;
+      --  'C' means 'column' - the number of the virtual column where is the cursor now;
+      --  'T' means 'total' - the total count of lines in the current buffer;
+      -- Every specifier can be used in similar maner to %d in the {string.format} function.
+      -- The pattern similar to the default 'location' component is '%3L:%-2C'
+      pattern = '%2C:%-3L/%T'
+    }
+  }
+}
+```
 
 ### ex.relative_filename
 
