@@ -8,6 +8,7 @@ for `lualine.nvim` with additional components.
 ## 📒 <a name="contents:">Contents:</a>
  - [📥 Installation](#installation)
  - [🔧 New common component options](#new-common-component-options)
+ - [🎬 Make a demo](#make-a-demo)
  - [🧩 Provided components](#provided-components)
     - [ex.spellcheck](#exspellcheck)
     - [ex.cwd](#excwd)
@@ -76,6 +77,33 @@ This plugin introduces a new `disabled` state. This state means that a component
 an icon still should be shown with `disabled` color. The difference between  `cond = false` and the
 `is_enabled = false` is that in the first case a component will not be rendered at all, but in the
 second case only the icon with `disabled_color` will be shown.
+
+## 🎬 <a name="make-a-demo">Make a demo</a>
+
+You may try every component from this repo in the separate nvim instance. To do
+this run in terminal:
+
+```sh
+make demo component=<component name>
+```
+
+Where the `<component name>` is the same string as should be used in the
+lualine configuration. For example: `ex.cwd`.
+
+Also, it's possible to pass a custom component options to the demo:
+
+```sh
+make demo component=<component name> component_opts='<json object>'
+```
+
+The `<json object>` should correspond to the lua table with component options.
+For example: 
+
+```sh
+make demo component=ex.cwd component_opts='{ "depth": 1 }'
+```
+
+<img src="https://github.com/dokwork/lualine-ex/assets/1548114/66317d8e-6ecd-4329-bfbb-6f355c642ed6" height=100 />
 
 ## 🧩 <a name="provided-components">Provided components</a>
 
