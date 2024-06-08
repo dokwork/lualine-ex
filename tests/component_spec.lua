@@ -7,6 +7,52 @@ local same = assert.are.same
 local l = require('tests.ex.lualine')
 local t = require('tests.ex.busted') --:ignore_all_tests()
 
+describe('ex.component', function()
+    it('should have the same methods as lualine.component', function()
+        local Test = require('lualine.ex.component'):extend()
+        -- check only few:
+        assert(type(Test.update_status) == 'function')
+        assert(type(Test.draw) == 'function')
+    end)
+    it('child should have the same methods as ex.component', function()
+        local Test = require('lualine.ex.component'):extend()
+        -- check only few:
+        assert(type(Test.pre_init) == 'function')
+        assert(type(Test.post_init) == 'function')
+    end)
+    it('child`s default options should include parent`s', function()
+        -- given:
+        local Test = require('lualine.ex.component'):extend({ parent_opt = true })
+        -- when:
+        local Child = Test:extend({ child_opt = true })
+        -- then:
+        local clue = vim.inspect(Child.default_options)
+        assert(Child.default_options.parent_opt, clue)
+        assert(Child.default_options.child_opt, clue)
+    end)
+    it('child`s default options should override parent`s', function()
+        -- given:
+        local Test = require('lualine.ex.component'):extend({ opt = false })
+        -- when:
+        local Child = Test:extend({ opt = true })
+        -- then:
+        local clue = vim.inspect(Child.default_options)
+        assert(Child.default_options.opt, clue)
+    end)
+    it('instance of the child should have the same methods as a parent', function()
+        -- given:
+        local Test = require('lualine.ex.component'):extend()
+        function Test:test()
+            return true
+        end
+
+        local Child = Test:extend()
+        -- when:
+        local child = Child:new(u.opts({ icon = { align = 'right' } }))
+        -- then:
+        assert(type(child.test) == 'function')
+    end)
+end)
 describe('A child of the ex.component', function()
     it('should have the passed default options as a property', function()
         -- given:
@@ -46,6 +92,7 @@ describe('A child of the ex.component', function()
             function Ex:post_init()
                 passed_opts = self.options
             end
+
             -- when:
             Ex(init_opts)
             -- then:
@@ -67,6 +114,7 @@ describe('A child of the ex.component', function()
             function Child:update_status()
                 return ''
             end
+
             local cmp = Child(u.opts())
 
             -- when:
@@ -88,6 +136,7 @@ describe('A child of the ex.component', function()
             function Child:update_status()
                 return 'some_text'
             end
+
             local cmp = Child(u.opts())
 
             -- when:
@@ -103,9 +152,11 @@ describe('A child of the ex.component', function()
             function Child:update_status()
                 return 'some_text'
             end
+
             function Child:is_enabled()
                 return false
             end
+
             local cmp = Child(u.opts())
 
             -- when:
@@ -130,9 +181,11 @@ describe('A child of the ex.component', function()
             function Child:update_status()
                 return 'some_text'
             end
+
             function Child:is_enabled()
                 return is_enabled
             end
+
             local cmp = Child(u.opts())
 
             -- when:
