@@ -1,17 +1,17 @@
-local null_ls = require('null-ls')
+local none_ls = require('null-ls')
 local l = require('tests.ex.lualine')
 local t = require('tests.ex.busted') --:ignore_all_tests()
 
 local eq = assert.are.equal
 
-local component_name = 'ex.lsp.null_ls'
+local component_name = 'ex.lsp.none_ls'
 describe(component_name, function()
-    null_ls.setup({
+    none_ls.setup({
         sources = {
-            null_ls.builtins.completion.spell,
-            null_ls.builtins.formatting.stylua,
-            null_ls.builtins.hover.dictionary,
-            null_ls.builtins.diagnostics.clang_check,
+            none_ls.builtins.completion.spell,
+            none_ls.builtins.formatting.stylua,
+            none_ls.builtins.hover.dictionary,
+            none_ls.builtins.diagnostics.clang_check,
         },
     })
     describe('draw method', function()
@@ -38,7 +38,7 @@ describe(component_name, function()
             end)
         end)
         it('should show names only of sources sutisfied to the query', function()
-            local opts = { query = { method = null_ls.methods.HOVER } }
+            local opts = { query = { method = none_ls.methods.HOVER } }
             l.test_matched_component(component_name, opts, function(ctbl)
                 eq('dictionary', ctbl.value)
             end)

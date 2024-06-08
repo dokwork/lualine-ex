@@ -18,7 +18,7 @@ LUALINE=$(START)/nvim-lspconfig
 
 # Specific for components:
 LSPCONFIG=$(START)/lualine.nvim
-NULL_LS=$(START)/null-ls.nvim
+NONE_LS=$(START)/none-ls.nvim
 # ====================
 
 define HELP
@@ -74,7 +74,7 @@ install:
 	@[ -d $(DEVICONS) ] || git clone --depth 1 https://github.com/nvim-tree/nvim-web-devicons $(DEVICONS)
 	@[ -d $(LSPCONFIG) ] || git clone --depth 1 https://github.com/neovim/nvim-lspconfig $(LSPCONFIG)
 	@[ -d $(LUALINE) ] || git clone --depth 1 https://github.com/nvim-lualine/lualine.nvim $(LUALINE)
-	@[ -d $(NULL_LS) ] || git clone --depth 1 https://github.com/nvimtools/none-ls.nvim $(NULL_LS)
+	@[ -d $(NONE_LS) ] || git clone --depth 1 https://github.com/nvimtools/none-ls.nvim $(NONE_LS)
 ifdef plugin
 	@[ -d $(START)/$(notdir $(plugin)) ] || git clone --depth 1 https://github.com/$(plugin) $(START)/$(notdir $(plugin))
 endif
