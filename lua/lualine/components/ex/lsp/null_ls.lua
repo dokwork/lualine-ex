@@ -3,7 +3,7 @@ local log = require('plenary.log').new({ plugin = 'ex.lsp.null-ls' })
 -- we should be ready to three possible cases:
 -- * when null-ls is not loaded we should load it only on demand;
 -- * when null-ls is not installed we should mock it to avoid errors;
--- * when it is installed and loaded we should it use it.
+-- * when it is installed and loaded we should use it.
 local null_ls = setmetatable({}, {
     __index = function(self, key)
         -- attempt to lazy load null-ls plugin
@@ -12,9 +12,9 @@ local null_ls = setmetatable({}, {
             rawset(self, 'is_installed', is_installed)
             rawset(self, 'null_ls', null_ls)
             if is_installed then
-                log.debug('null-ls is installed')
+                log.debug('none-ls is installed')
             else
-                log.warn('null-ls is not installed.')
+                log.warn('none-ls is not installed.')
             end
         end
         -- return original plugin if it's installed
@@ -23,9 +23,13 @@ local null_ls = setmetatable({}, {
         end
         -- return mock:
         if key == 'get_source' then
-            return {}
+            return function()
+                return {}
+            end
         elseif key == 'is_registered' then
-            return false
+            return function()
+                return false
+            end
         else
             return nil
         end
