@@ -4,7 +4,6 @@
 
  - [ExComponent](#excomponent)
  - [Helpful functions](#helpful-functions)
- - [Make a demo](#make-a-demo)
 
 ## ExComponent
 
@@ -205,30 +204,3 @@ Resolves a {max_length} option of a component. The result depends on {ln}.
 **Return:**
 
 An integer number.
-
-## Make a demo
-
-You may try every component from this repo in the separate nvim instance. To do
-this run in terminal:
-
-```sh
-make demo component=<component name>
-```
-
-Where the `<component name>` is the same string as should be used in the
-lualine configuration. For example: `ex.cwd`.
-
-Also, it's possible to pass a custom component options to the demo:
-
-```sh
-make demo component=<component name> component_opts='<json object>'
-```
-
-The `<json object>` should correspond to the lua table with component options.
-For example: 
-
-```sh
-make demo component=ex.cwd component_opts='{ "depth": 1 }'
-```
-
-<img src="https://github.com/dokwork/lualine-ex/assets/1548114/66317d8e-6ecd-4329-bfbb-6f355c642ed6" height=100 />
