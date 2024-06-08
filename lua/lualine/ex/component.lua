@@ -16,15 +16,19 @@ local log = require('plenary.log').new({ plugin = 'ex.component' })
 ---@field default_options table
 ---@field options ExComponentOptions
 
-local Ex = require('lualine.component'):extend()
+local LC = require('lualine.component')
+-- extends all methods from the `lualine.component`:
+local Ex = LC:extend()
 
+-- override the `extend` method to be able to receive the default options:
 function Ex:extend(default_options)
-    local cls = self.super.extend(self)
-    cls.default_options = ex.merge(vim.deepcopy(default_options or {}), {
+    local cls = LC.extend(self)
+    local parent_default_options = ex.merge(vim.deepcopy(self.default_options or {}), {
         disabled_color = { fg = 'grey' },
         disabled_icon_color = { fg = 'grey' },
         draw_empty = true,
     })
+    cls.default_options = vim.tbl_extend('force', parent_default_options, default_options or {})
     return cls
 end
 

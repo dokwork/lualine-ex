@@ -30,6 +30,8 @@ end
 
 ---@type fun(dest: table, source: table): table
 --- Puts all absent key-value pairs from the {source} to the {dest}.
+---@param dest table a table to which data should be added.
+---@param source table a table from which a data should be copied.
 ---@return table dest with added pairs.
 M.merge = function(dest, source, already_visited)
     vim.validate({ dest = { dest, 'table' }, source = { source, 'table' } })
