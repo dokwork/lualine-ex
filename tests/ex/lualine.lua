@@ -122,16 +122,20 @@ function M.match_rendered_component(rendered_component, opts)
 
     -- Try to match the short pattern with icon color only
     if is_right_icon then
-        t.value, t.icon_hl, t.icon =
-            string.match(rendered_component, p_value .. p_padding .. p_hl .. p_icon .. '$')
+        t.value, t.icon_hl, t.icon = string.match(
+            rendered_component,
+            p_value .. p_padding .. p_hl .. p_icon .. '$'
+        )
         t.hl = default_hl
         t.icon_color = {
             fg = M.get_gui_color(t.icon_hl, 'fg#'),
             bg = M.get_gui_color(t.icon_hl, 'bg#'),
         }
     else
-        t.icon_hl, t.icon, t.value =
-            string.match(rendered_component, p_hl .. p_icon .. p_padding .. p_value)
+        t.icon_hl, t.icon, t.value = string.match(
+            rendered_component,
+            p_hl .. p_icon .. p_padding .. p_value
+        )
         t.icon_color = {
             fg = M.get_gui_color(t.icon_hl, 'fg#'),
             bg = M.get_gui_color(t.icon_hl, 'bg#'),

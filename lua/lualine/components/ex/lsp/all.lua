@@ -15,14 +15,15 @@ end
 ---@class AllLspComponent: ExComponent
 ---@field options AllLspOptions
 ---@field components table
-local AllLsp =
-    require('lualine.ex.component'):extend(vim.tbl_extend('force', SingleLsp.default_options, {
+local AllLsp = require('lualine.ex.component'):extend(
+    vim.tbl_extend('force', SingleLsp.default_options, {
         is_enabled = function(component)
             return not ex.is_empty(component:__clients())
         end,
         notify_enabled = true,
         notify_hl = 'Comment',
-    }))
+    })
+)
 
 ---@protected
 function AllLsp:pre_init()

@@ -18,7 +18,7 @@ for `lualine.nvim` with additional components.
     - [ex.git.branch](#exgitbranch)
     - [ex.lsp.single](#exlspsingle)
     - [ex.lsp.all](#exlspall)
-    - [ex.lsp.null_ls](#exlspnull_ls)
+    - [ex.lsp.none_ls](#exlspnone_ls)
  - [🛠️ Tools](#tools)
 
 ## 📥 <a name="installation">Installation</a>
@@ -500,7 +500,7 @@ on_click = function(clicks, button, modified)
 end
 ```
 
-### ex.lsp.null_ls
+### ex.lsp.none_ls
 
 This component shows names of the
 [null-ls](https://github.com/nvimtools/none-ls.nvim) sources according to the specified
@@ -512,7 +512,7 @@ duplicated names are merged.
 sections = {
   lualine_a = {
     {
-      'ex.lsp.null_ls',
+      'ex.lsp.none_ls',
 
       -- The table or function that returns the table with the source query.
       -- By default it shows only actual sorces. To show all registered sources
