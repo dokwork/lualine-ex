@@ -403,8 +403,8 @@ No one lsp client:&nbsp;<img src="https://github.com/dokwork/lualine-ex/assets/6
 This component shows a name and appropriate icon of the first active lsp client for the current
 buffer. 
 
-An icon and a color are taken from the `icons` table or `nvim-wev-devicons` plugin (if it's installed). 
-If no one icon was found for the lsp client neither in `icons`, nor in `nvim-wev-devicons`, the `unknown` icon 
+An icon and a color are taken from the `icons` table or `nvim-web-devicons` plugin (if it's installed). 
+If no one icon was found for the lsp client neither in `icons`, nor in `nvim-web-devicons`, the `unknown` icon 
 will be used. For the case, when no one server is run, the component is in disabled state and has
 the `lsp_is_off` icon.
 
@@ -455,7 +455,7 @@ sections = {
 [demo](https://asciinema.org/a/550273)
 
 This component provides information about status of all run LSP servers. Every server has its own
-color and icon, which can be taken from the option `icons` or plugin `nvim-wev-devicons` (if it's
+color and icon, which can be taken from the option `icons` or plugin `nvim-web-devicons` (if it's
 installed). 
 
 When some of already run servers is not active for the current buffer, it is in _disabled_ state.
