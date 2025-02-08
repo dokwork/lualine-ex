@@ -300,7 +300,7 @@ returns a number:
     -- The configuration of the shorten algorithm.
     shorten = { 
         -- The count of letters, which will be taken from every part of the path
-        lenght = 5, 
+        length = 5,
         -- The list of indexes of filename parts, which should not be shortened
         -- at all (the file name { -1 } is always excluded)
         exclude = nil 

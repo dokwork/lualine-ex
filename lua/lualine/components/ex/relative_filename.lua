@@ -3,7 +3,7 @@ local ex = require('lualine.ex')
 local M = require('lualine.ex.component'):extend({
     external_prefix = nil,
     filename_only_prefix = '…/',
-    shorten = { lenght = 5, exclude = nil },
+    shorten = { length = 5, exclude = nil },
     -- -1 - never shorten; 0 - always shorten; >0 - shorten when longer then N symbols
     max_length = 0.3,
 })
