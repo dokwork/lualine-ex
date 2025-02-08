@@ -427,7 +427,7 @@ sections = {
         unknown = '?', 
 
         -- Default icon for a case, when no one server is run:
-        lsp_is_off = 'ﮤ',
+        lsp_is_off = '󰚦',
 
         -- Example of the icon for a client, which doesn't have an icon in `nvim-web-devicons`:
         ['null-ls'] = { 'N', color = 'magenta' }

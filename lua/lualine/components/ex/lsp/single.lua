@@ -87,7 +87,7 @@ end
 local Lsp = require('lualine.ex.component'):extend({
     icons = {
         unknown = '?',
-        lsp_is_off = 'ﮤ',
+        lsp_is_off = '󰚦',
     },
     is_enabled = function(component)
         return is_lsp_client_active(component.client)
