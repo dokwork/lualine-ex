@@ -3,13 +3,22 @@ local t = require('tests.ex.busted') --ignore_all_tests()
 local mock = require('luassert.mock')
 local devicons = require('nvim-web-devicons').get_icons()
 
-local eq = assert.are.equal
 local assert_blank = assert.is_blank
 local same = assert.are.same
 
+--- This function transforms the color codes to the lower case strings,
+--- and delegates assertion to the {assert.are.equal}
+local function eq(expected, actual, ...)
+    if type(expected) == 'string' and expected:sub(1, 1) == '#' then
+        expected = expected:lower()
+        actual = actual:lower()
+    end
+    return assert.are.equal(expected, actual, ...)
+end
+
 local lua_lsp = {
     id = 1,
-    name = 'sumneko_lua',
+    name = 'lua_ls',
     config = {
         filetypes = { 'lua' },
     },
@@ -236,7 +245,7 @@ describe('ex.lsp.all component', function()
 
     it('should use colors from the `icons` or devicons', function()
         -- given:
-        local lua_color = lua_icon.color
+        local lua_color = lua_icon.color:lower()
         local vim_color = '#7cfc00'
         local all_lsp = l.init_component(
             component_name,
@@ -249,9 +258,9 @@ describe('ex.lsp.all component', function()
         local rc = l.render_component(all_lsp)
         -- then:
         local hls = get_all_highlights(rc)
-        assert(#hls > 2, 'Colors not enough in ' .. rc)
+        assert(#hls > 2, 'Not enough colors in ' .. rc)
         for _, hl in ipairs(hls) do
-            local fg = l.get_gui_color(hl, 'fg')
+            local fg = l.get_gui_color(hl, 'fg'):lower()
             assert(
                 vim_color == fg or lua_color == fg,
                 string.format('Unexpected fg color %s in %s of the component %s', fg, hl, rc)
