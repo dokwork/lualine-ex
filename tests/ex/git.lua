@@ -30,7 +30,9 @@ function Git:git(...)
     local cmd = table.concat({ ... }, ' ')
     cmd = string.format('git -C %s %s %s', self.git_root, cmd, dev_null)
     log.debug('Execute: ' .. cmd)
-    os.execute(cmd)
+    if not os.execute(cmd) then
+        error('Error on execute ' .. cmd)
+    end
 end
 
 function Git:init(branch)

@@ -1,6 +1,6 @@
-local t = require('tests.ex.busted')
 local fs = require('tests.ex.fs')
 local Git = require('tests.ex.git')
+local t = require('tests.ex.busted') --:ignore_all_tests()
 
 local eq = assert.are.equal
 

@@ -165,6 +165,10 @@ function Git:is_worktree_changed(is_sync)
             end,
             on_stdout = function(err, data)
                 assert(not err, err)
+                -- nil means empty stdout. That case is handled in {on_exit} callback
+                if data == nil then
+                    return
+                end
                 self.__git_status_job.stdout_was_empty = false
                 self.__is_workspace_changed = #data > 0
             end,
