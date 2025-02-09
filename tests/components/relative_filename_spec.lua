@@ -1,4 +1,5 @@
 local l = require('tests.ex.lualine')
+local t = require('tests.ex.busted') --:ignore_all_tests()
 
 local mock = { o = {}, api = {} }
 local eq = assert.are.equal
@@ -81,7 +82,7 @@ describe('relative_filename component', function()
         end)
 
         it('should always shorten the path when {max_length} is 0', function()
-            local opts = { max_length = 0 }
+            local opts = { max_length = 0, shorten = { length = 1 } }
             l.test_matched_component(component_name, opts, function(ct)
                 eq('a/x/test.txt', ct.value)
             end)
@@ -101,8 +102,10 @@ describe('relative_filename component', function()
                 local opts = {
                     max_length = function(path)
                         passed_arg = path
+                        -- 0 means that every part of the path should be shorten
                         return 0
                     end,
+                    shorten = { length = 1 },
                 }
                 l.test_matched_component(component_name, opts, function(ct)
                     eq('a/x/test.txt', ct.value)
