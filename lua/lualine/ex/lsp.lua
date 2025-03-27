@@ -15,7 +15,7 @@ M.stop_unused_clients = function(opts)
         end
     end
     local were_stopped = 0
-    for _, client in pairs(vim.lsp.get_active_clients()) do
+    for _, client in pairs(vim.lsp.get_clients()) do
         if not next(client.attached_buffers) then
             notify('Stop the client %d %s', client.id, client.name or 'UNKNOWN')
             vim.lsp.stop_client(client.id)
