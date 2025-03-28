@@ -140,7 +140,7 @@ function Lsp:__update_client()
         return
     end
 
-    local clients = vim.lsp.get_active_clients({ bufnr = 0 })
+    local clients = vim.lsp.get_clients({ bufnr = 0 })
     local _, client = next(clients or {})
     if (client and self.client) and (client.id == self.client.id) then
         return
