@@ -5,7 +5,10 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - main
     paths-ignore:
+      - 'README'
       - 'LICENSE'
 
 jobs:
@@ -28,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        neovim_version: ['v0.8.0', 'v0.10.0', 'nightly']
+        neovim_version: ['v0.10.0', 'v0.11.0', 'nightly']
 
     steps:
       - uses: actions/checkout@v3

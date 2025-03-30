@@ -6,6 +6,7 @@ This is a [plugin](https://github.com/nvim-lualine/lualine.nvim/wiki/Plugins)
 for `lualine.nvim` with additional components.
 
 ## 📒 <a name="contents:">Contents:</a>
+ - [✅ Requirenments](#requirenments)
  - [📥 Installation](#installation)
  - [🔧 New common component options](#new-common-component-options)
  - [🎬 Make a demo](#make-a-demo)
@@ -20,6 +21,13 @@ for `lualine.nvim` with additional components.
     - [ex.lsp.all](#exlspall)
     - [ex.lsp.none_ls](#exlspnone_ls)
  - [🛠️ Tools](#tools)
+
+## ✅ <a name="requirenments">Requirenments</a>
+
+The `main` branch is compatible with the last version of the neovim and lualine. It contains
+the last fixes and updates. Tagged releases can be more stable. The actual
+version requires the neovim is `0.10.0` or upper, but the version `0.3.1` can
+work with neovim `0.8.0`.
 
 ## 📥 <a name="installation">Installation</a>
 
