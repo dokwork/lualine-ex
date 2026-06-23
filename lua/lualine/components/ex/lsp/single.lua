@@ -6,6 +6,7 @@ local log = require('plenary.log').new({ plugin = 'ex.lsp.single' })
 ---                     Otherwise it is just the client id. This is used for logs and messages.
 ---@field config { filetypes: string[] } Configuration with a list of file types, appropriate for
 ---  this client.
+---@field attached_buffers table<integer, true> Buffers this client is attached to.
 
 ---@alias LspIcon string | LualineIcon | DevIcon
 
@@ -66,8 +67,8 @@ local function is_lsp_client_active(client)
     if client.name == 'null-ls' then
         return require('null-ls').is_registered({ filetype = vim.bo.filetype })
     end
-    local buffers = vim.lsp.get_buffers_by_client_id(client.id) or {}
-    local is_active = vim.tbl_contains(buffers, vim.fn.bufnr('%'))
+    local attached_buffers = client.attached_buffers or {}
+    local is_active = attached_buffers[vim.api.nvim_get_current_buf()] ~= nil
     return is_active and is_lsp_client_ready(client)
 end
 
