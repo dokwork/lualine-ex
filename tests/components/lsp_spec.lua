@@ -85,7 +85,9 @@ describe('ex.lsp.single component', function()
 
         it('should have the disabled color when the client is not active', function()
             local opts = l.opts({ disabled_color = { fg = '#223421' } })
-            vim.mock.lsp.get_clients.returns({ attach_client_to_buf(lua_lsp, vim.fn.bufnr('%') + 1) })
+            vim.mock.lsp.get_clients.returns({
+                attach_client_to_buf(lua_lsp, vim.fn.bufnr('%') + 1),
+            })
 
             l.test_matched_component(component_name, opts, function(ctbl)
                 eq(opts.disabled_color.fg, ctbl.color.fg)
@@ -102,7 +104,9 @@ describe('ex.lsp.single component', function()
                     id = 1,
                     name = 'unknown',
                 }
-                vim.mock.lsp.get_clients.returns({ attach_client_to_buf(unknown_lsp, vim.fn.bufnr('%')) })
+                vim.mock.lsp.get_clients.returns({
+                    attach_client_to_buf(unknown_lsp, vim.fn.bufnr('%')),
+                })
                 local opts = l.opts()
 
                 l.test_matched_component(component_name, opts, function(ctbl)
@@ -157,7 +161,9 @@ describe('ex.lsp.single component', function()
             local ctbl = l.match_rendered_component(rc)
             local hl = ctbl.hl
             -- when:
-            vim.mock.lsp.get_clients.returns({ another_lua_lsp })
+            vim.mock.lsp.get_clients.returns({
+                attach_client_to_buf(another_lua_lsp, vim.fn.bufnr('%')),
+            })
             rc = l.render_component(lsp)
             ctbl = l.match_rendered_component(rc)
             -- then:
@@ -166,7 +172,10 @@ describe('ex.lsp.single component', function()
 
         it('should not be changed if the client was specified in options', function()
             -- given:
-            local lsp = l.init_component(component_name, l.opts({ client = attach_client_to_buf(vim_lsp, vim.fn.bufnr('%')) }))
+            local lsp = l.init_component(
+                component_name,
+                l.opts({ client = attach_client_to_buf(vim_lsp, vim.fn.bufnr('%')) })
+            )
             vim.mock.lsp.get_clients.returns({ attach_client_to_buf(lua_lsp, vim.fn.bufnr('%')) })
 
             l.test_matched_component(lsp, function(ctbl)
@@ -273,7 +282,10 @@ describe('ex.lsp.all component', function()
         -- given:
         vim.mock.lsp.get_clients.returns({
             attach_client_to_buf(lua_lsp, vim.fn.bufnr('%')),
-            attach_client_to_buf(vim.tbl_deep_extend('keep', { id = 3 }, lua_lsp), vim.fn.bufnr('%')),
+            attach_client_to_buf(
+                vim.tbl_deep_extend('keep', { id = 3 }, lua_lsp),
+                vim.fn.bufnr('%')
+            ),
         })
         -- when:
         local rc = l.render_component(component_name, { icons_enabled = false })
